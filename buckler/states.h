@@ -1,21 +1,23 @@
-/*
- * states.h
- *
- *  Created on: Sep 22, 2018
- *      Author: shromonaghosh
- */
-
-#ifndef STATES_H_
-#define STATES_H_
+#ifndef STATES_H
+#define STATES_H
 
 #include <stdio.h>
 
 typedef enum {
-    OFF,
-    ACCELERATE,
-    DECELERATE,
-    LEFT,
-    RIGHT,
-} states;
+	REST,
+	ACCELERATE,
+	REVERSE,
+	CRUISE
+} power_states;
+
+typedef enum {
+	CENTER,
+	LEFT,
+	LEFT_UP,
+	LEFT_DOWN,
+	RIGHT,
+	RIGHT_UP,
+	RIGHT_DOWN
+} turning_states;
 
 #endif /* STATES_H_ */

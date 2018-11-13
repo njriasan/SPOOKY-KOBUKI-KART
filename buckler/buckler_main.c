@@ -28,6 +28,7 @@
 #include "simple_ble.h"
 
 #include "states.h"
+#include "fsm.h"
 
 #define NUM_BUTTONS 4
 
@@ -37,13 +38,11 @@ NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 // global variables
 KobukiSensors_t sensors = {0};
 
-states state = OFF;
-
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
         // c0:98:e5:yy:xx:xx
         .platform_id       = 0x00,    // used as 4th octect in device BLE address yy
-        .device_id         = 0x11, // TODO: replace with your lab bench number xx
+        .device_id         = 0x12, // TODO: replace with your lab bench number xx
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -65,7 +64,7 @@ simple_ble_app_t* simple_ble_app;
 // controls ordering: accelerate, decelerate, left, right
 
 typedef struct {
-  char* name;
+  const char* name;
   uint16_t mask;
   uint8_t shift_amount;
   uint8_t value;
@@ -83,50 +82,56 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
-    uint8_t *bytes_look = (uint8_t *) &controller_bytes;
+    //uint8_t *bytes_look = (uint8_t *) &controller_bytes;
     //printf("%x\n", stick_push_button.value);
   	//printf("%x %x\n", bytes_look[0], bytes_look[1]);
   	//printf("\n\n");
-
-
-  if (x_button.value == 1) {
-    if (stick_push_button.value == 6) {
-      state = LEFT;
-    } else if (stick_push_button.value == 2) {
-      state = RIGHT;
-    } else {
-      state = ACCELERATE;
-    }
-  } else if (b_button.value == 1) {
-    state = DECELERATE;
-  } else {
-  	state = OFF;
-  }
 }
 
-void print_state(states current_state){
+void print_power_state(power_states current_state){
 	switch(current_state){
-  	case OFF: {
-  		display_write("OFF", DISPLAY_LINE_0);
-  		break;
-    }
-    case ACCELERATE: {
-      display_write("ACCELERATE", DISPLAY_LINE_0);
-      break;
-    }
-    case DECELERATE: {
-      display_write("DECELERATE", DISPLAY_LINE_0);
-      break;
-    }
-    case LEFT: {
-      display_write("LEFT", DISPLAY_LINE_0);
-      break;
-    }
-    case RIGHT: {
-      display_write("RIGHT", DISPLAY_LINE_0);
-      break;
-    }
-  }
+	  	case REST: {
+	  		display_write("OFF", DISPLAY_LINE_0);
+	  		break;
+	    }
+	    case ACCELERATE: {
+	      display_write("ACCELERATE", DISPLAY_LINE_0);
+	      break;
+	    }
+	    case REVERSE: {
+	      display_write("REVERSE", DISPLAY_LINE_0);
+	      break;
+	    }
+	    case CRUISE: {
+	   	  display_write("CRUISE", DISPLAY_LINE_0);
+	      break;
+	    }
+	}
+}
+
+void print_turning_state(turning_states current_state){
+	switch(current_state){
+	  	case LEFT: {
+	  		display_write("LEFT", DISPLAY_LINE_1);
+	  		break;
+	    }
+	    case CENTER: {
+	      display_write("CENTER", DISPLAY_LINE_1);
+	      break;
+	    }
+	    case RIGHT: {
+	      display_write("RIGHT", DISPLAY_LINE_1);
+	      break;
+	    }
+      case LEFT_UP: {
+        display_write("LEFT_UP", DISPLAY_LINE_1);
+        break;
+      }
+      case RIGHT_UP: {
+        display_write("RIGHT_UP", DISPLAY_LINE_1);
+        break;
+      }
+	}
 }
 
 int main(void) {
@@ -188,75 +193,57 @@ int main(void) {
   kobukiInit();
   printf("Kobuki initialized!\n");
 
+  // Initialize the fsms
+  timer_init();
+  init_power_fsm(&p_fsm);
+  init_turning_fsm(&t_fsm);
+
   // loop forever, running state machine
   while (1) {
+	  if (x_button.value == 1) {
+	    // Acclerating
+	    on_X_press();
+	  } else if (b_button.value == 1) {
+      // Braking/reversing
+      on_B_press();
+    } else if (p_fsm.state == REST) {
+	    rest();
+	  } else {
+	    // Cruising
+	    on_button_release();
+	  }
+
+	  if (stick_push_button.value == 6) {
+	    // Turning left
+	    on_l_stick_press();
+	  } else if (stick_push_button.value == 2) {
+	    // Turning right
+	    on_r_stick_press();
+	  } else if (stick_push_button.value == 7) {
+      // Turning left diagonal
+      on_l_up_stick_press();
+    } else if (stick_push_button.value == 1) {
+      // Turning right diagonal
+      on_r_up_stick_press();
+    } else if (stick_push_button.value == 5) {
+      // Turning "right" backwards
+      on_r_stick_press();
+    } else if (stick_push_button.value == 3) {
+      // Turning "left" backwards
+      on_l_stick_press();
+    } else {
+	    // Go straight
+	    on_stick_release();
+	  }
+  	// Drive the kobuki
+  	drive();
+
+  	print_power_state(p_fsm.state);
+  	print_turning_state(t_fsm.state);
+  	/* May read sensors later. */
     // read sensors from robot
-    int status = kobukiSensorPoll(&sensors);
-
-    // TODO: complete state machine
-    switch(state) {
-      case OFF: {
-        print_state(state);
-
-        // transition logic
-        if (is_button_pressed(&sensors)) {
-          // state = FORWARD;
-        } else {
-          state = OFF;
-          // perform state-specific actions here
-          kobukiDriveDirect(0, 0);
-        }
-        break; // each case needs to end with break!
-      }
-
-      case ACCELERATE: {
-        print_state(state);
-
-        if (is_button_pressed(&sensors)) {
-          state = OFF;
-        } else {
-          // perform state-specific actions here
-          kobukiDriveDirect(700, 700);
-        }
-        break; // each case needs to end with break!
-      }
-
-      case DECELERATE: {
-        print_state(state);
-
-        if (is_button_pressed(&sensors)) {
-          state = OFF;
-        } else {
-          // perform state-specific actions here
-          kobukiDriveDirect(-100, -100);
-        }
-        break; // each case needs to end with break!
-      }
-
-      case LEFT: {
-        print_state(state);
-
-        if (is_button_pressed(&sensors)) {
-          state = OFF;
-        } else {
-          // perform state-specific actions here
-          kobukiDriveDirect(650, 700);
-        }
-        break; // each case needs to end with break!
-      }
-
-      case RIGHT: {
-        print_state(state);
-
-        if (is_button_pressed(&sensors)) {
-          state = OFF;
-        } else {
-          // perform state-specific actions here
-          kobukiDriveDirect(700, 650);
-        }
-        break; // each case needs to end with break!
-      }
-    }
+    //int status = kobukiSensorPoll(&sensors);
+    //nrf_delay_ms(100);
   }
 }
 
