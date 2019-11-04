@@ -28,6 +28,11 @@ class RobotController():
         self.robot = Peripheral(addr)
         print("connected")
 
+        self.buttons_on = {0x01: "up-right", 0x02: "right", 0x03: "down-right", 0x05: "down-left",
+                        0x06: "left", 0x07: "up-left", 0x08: "accelerate", 0x09: "decelerate"}
+        self.buttons_off = {0x010: "up-right", 0x020: "right", 0x030: "down-right", 0x050: "down-left",
+                        0x060: "left", 0x070: "up-left", 0x080: "accelerate", 0x090: "decelerate"}
+                        
         # keep state for keypresses
         # these are in order of "byte" that gets updated from 0 -> 8
         # controller is oriented sideways (we used left contoller for testing)
@@ -79,60 +84,16 @@ class RobotController():
         # A13F 0800 0800 8000 8000 8000 80 -> Y
 
         # extract appropriate bytes in packet
-        if pkt.direction_byte == 0x00:
-            # up
-            pass
-        elif pkt.direction_byte == 0x01:
-            # up-right
-            self.characteristics["up-right"].write(b'\x01')
-        elif pkt.direction_byte == 0x02:
-            # right
-            self.characteristics["right"].write(b'\x01')
-        elif pkt.direction_byte == 0x03:
-            # down-right
-            self.characteristics["down-right"].write(b'\x01')
-        elif pkt.direction_byte == 0x04:
-            # down
-            pass
-        elif pkt.direction_byte == 0x05:
-            # down-left
-            self.characteristics["down-left"].write(b'\x01')
-        elif pkt.direction_byte == 0x06:
-            # left
-            self.characteristics["left"].write(b'\x01')
-        elif pkt.direction_byte == 0x07:
-            # up-left
-            self.characteristics["up-left"].write(b'\x01')
+        if pkt is in self.buttons_on[pkt]:
+            button = self.buttons_on[pkt]
+            self.pressed[button] = True
+            self.characteristics[button].write(bytes([self.pressed[button]]))
+        elif pkt is in self.buttons_off[pkt]:
+            button = self.buttons_off[pkt]
+            self.pressed[button] = False
+            self.characteristics[button].write(bytes([self.pressed[button]]))
         else:
-            pass
-
-        if pkt.throttle_byte == 0x02:
-            self.characteristics["accelerate"].write(b'\x01')
-        elif pkt.throttle_byte == 0x04:
-            self.characteristics["decelerate"].write(b'\x01')
-        else:
-            pass
-
-
-
-    def on_key_event(self, event):
-        # print key name
-        print(event.name)
-        # if a key unrelated to direction keys is pressed, ignore
-        if event.name not in self.pressed: return
-        # if a key is pressed down
-        if event.event_type == keyboard.KEY_DOWN:
-            # if that key is already pressed down, ignore
-            if self.pressed[event.name]: return
-            # set state of key to pressed
-            self.pressed[event.name] = True
-            # TODO write to characteristic to change direction
-            self.characteristics[event.name].write(b'\x01')
-        else:
-            # set state of key to released
-            self.pressed[event.name] = False
-            self.characteristics[event.name].write(b'\x00')
-            # TODO write to characteristic to stop moving in this direction
+            return
 
     def __enter__(self):
         return self
