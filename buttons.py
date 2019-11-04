@@ -8,8 +8,8 @@
     For simplicity we will refer to all buttons by their names on the RIGHT Joy Con. This is because
     both joycons are basically symmetric (and directional pad may get confusing).
 
-    Note when refering to the direction of the directional stick we will refer to the direction to the
-    top of the diagram as up.
+    Note when refering to the direction of the directional stick we will refer to the direction towards
+    the buttons as up.
 """
 
 """
@@ -225,27 +225,20 @@ class Controller:
     """
     def _validate_button_list(self, button_list):
         assert(isinstance(button_list, list) and len(button_list) > 0)
-        # Verify that all bits and names are unique
+        # Verify that all input bits and names are unique
         name_set = set()
         input_bits_set = set()
-        output_bits_set = set()
         for i, button in enumerate(button_list):
             assert(isinstance(button, Button))
             name_set.add(button.name)
             input_mask = button.input_mask
-            output_mask = button.output_mask
             input_byte_bits = 8 * button.input_byte_num
-            output_byte_bits = 8 * button.output_byte_num
             for ctr in range(8):
                 bit_offset = 7 - ctr
                 if input_mask & (1 << bit_offset):
                     bit = input_byte_bits + bit_offset
                     assert (bit not in input_bits_set)
                     input_bits_set.add(bit)
-                if output_mask & (1 <<bit_offset): 
-                    bit = output_byte_bits + bit_offset
-                    assert (bit not in output_bits_set)
-                    output_bits_set.add(bit)
         assert(len(name_set) == len(button_list))
         return button_list
 
@@ -314,17 +307,20 @@ class JoyCon(Controller):
     """
     def __init__(self):
         buttons = []
-        buttons.append(ToggleButton([14], [12], "X"))
-        buttons.append(ToggleButton([12], [13], "Y"))
-        buttons.append(ToggleButton([15], [14], "A"))
-        buttons.append(ToggleButton([13], [15], "B"))
-        buttons.append(ToggleButton([22], [3], "+"))
-        buttons.append(ToggleButton([17], [10], "R"))
-        buttons.append(ToggleButton([16], [11], "RZ"))
-        buttons.append(ToggleButton([11], [8], "SL"))
         buttons.append(ToggleButton([10], [9], "SR"))
-        buttons.append(ToggleButton([20], [2], "STICK CLICK"))
+        buttons.append(ToggleButton([11], [8], "SL"))
+        buttons.append(ToggleButton([12], [13], "Y"))
+        buttons.append(ToggleButton([13], [15], "B"))
+        buttons.append(ToggleButton([14], [12], "X"))
+        buttons.append(ToggleButton([15], [14], "A"))
+        buttons.append(ToggleButton([16], [11], "RZ"))
+        buttons.append(ToggleButton([17], [10], "R"))
+        buttons.append(ToggleButton([18], [1], "CAPTURE"))
         buttons.append(ToggleButton([19], [1], "HOME"))
+        buttons.append(ToggleButton([20], [2], "RIGHT STICK CLICK"))
+        buttons.append(ToggleButton([21], [2], "LEFT STICK CLICK"))
+        buttons.append(ToggleButton([22], [3], "+"))
+        buttons.append(ToggleButton([23], [3], "-"))
         # Only non toggle button we have is the analog stick
         # Treating vericle as up we get the following map
         stick_push_map = {0: ButtonState(0, "LEFT"), 1: ButtonState(1, "LEFT-UP"), \
