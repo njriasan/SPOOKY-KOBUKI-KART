@@ -36,9 +36,9 @@ For connecting to the Kobuki we will have a single characteristic representing t
 
 This is the breakdown of the 2 Bytes (calling the MSB of the first byte bit 0 and the LSB of the second byte bit 15).
   *  Bit 0: UNUSED (always 0)
-  *  Bit 1: HOME
-  *  Bit 2: STICK CLICK
-  *  Bit 3: +
+  *  Bit 1: HOME/CAPTURE
+  *  Bit 2: LEFT/RIGHT STICK CLICK
+  *  Bit 3: +/-
   *  Bits 4-7: STICK PUSH 
   *  Bit 8: SL
   *  Bit 9: SR
