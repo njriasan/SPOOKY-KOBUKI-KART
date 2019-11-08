@@ -14,7 +14,11 @@ This process manager should then launch a BLE endpoint python, which will connec
 
 ### Running the process manager
 
-First make sure you have followed the installation instructions for `hidapi`. Then the following series of commands will execute the process manager (which we assume is perminantly running on the Raspberry Pi).
+First make sure you have followed the installation instructions for `hidapi`. 
+
+Next you need to also install `python3` and to run the python script you need to `pip3 install` all necessary dependencies (for example `pybluez`). Note because this runs in `sudo` you may need to `sudo pip3 install` to get the installations on the sudo version.
+
+Then the following series of commands will execute the process manager (which we assume is perminantly running on the Raspberry Pi).
 
 ```
 $ cd joycon
@@ -22,12 +26,6 @@ $ make
 $ sudo ./process_manager
 ```
 
-Note that the last step must be run as a root user or else we cannot access information on hid devices. At this point nothing will occur until a joycon is connected. Once you have connected to a joycon over bluetooth you will see an output that a process has been spawned and a port number. To connect the client run the follow series of commands from a separate terminal:
-
-```
-# Assuming your current directory is joycon
-$ cd ../
-$ python3 send_pkt.py <MAC_ADDR> <Server Port>
-```
+Note that the last step must be run as a root user or else we cannot access information on hid devices. At this point nothing will occur until a joycon is connected. Once you have connected to a joycon over bluetooth you will see an output that a process has spawned and probably that a python script has launched. You should now be able to view output when a button is pressed.
 
 We do not yet connect to the Kobukis so the mac address can be any string. This should then output connected. At this point is you press buttons on your joycon you should a 12 byte stream print in the terminal in which your client is located.
