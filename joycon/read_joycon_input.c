@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include "hidapi/hidapi.h"
 #include "read_joycon_input.h"
@@ -54,6 +55,7 @@ int setup_server_socket (struct addrinfo *server) {
  *  specified, closing the pipe.
  */
 int spawn_server (int write_pipe_fd) {
+    srand (time(0));
     while (true) {
         int32_t port_num = (rand () % (MAX_PORT - MIN_PORT)) + MIN_PORT;
         char port[6];
