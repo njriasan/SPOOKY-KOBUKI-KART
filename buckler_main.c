@@ -35,11 +35,13 @@ NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 // global variables
 KobukiSensors_t sensors = {0};
 
+states state = OFF;
+
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
         // c0:98:e5:49:xx:xx
         .platform_id       = 0x49,    // used as 4th octect in device BLE address
-        .device_id         = 0x000C, // TODO: replace with your lab bench number
+        .device_id         = 0x11, // TODO: replace with your lab bench number
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -53,64 +55,58 @@ static simple_ble_service_t robot_service = {{
 }};
 
 // TODO: Declare characteristics and variables for your service
-static simple_ble_char_t forward_char = {.uuid16 = 0xeda1};
-static bool forward_state = false;
-static simple_ble_char_t back_char = {.uuid16 = 0xeda2};
-static bool back_state = false;
-static simple_ble_char_t left_char = {.uuid16 = 0xeda3};
-static bool left_state= false;
-static simple_ble_char_t right_char = {.uuid16 = 0xeda4};
-static bool right_state= false;
+static simple_ble_char_t forward_state_char = {.uuid16 = 0xeda1};
+static bool forward = false;
 
+static simple_ble_char_t reverse_state_char = {.uuid16 = 0xeda2};
+static bool reverse = false;
 
+static simple_ble_char_t left_state_char = {.uuid16 = 0xeda3};
+static bool left = false;
 
+static simple_ble_char_t right_state_char = {.uuid16 = 0xeda4};
+static bool right = false;
 
 simple_ble_app_t* simple_ble_app;
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
-  if (simple_ble_is_char_event(p_ble_evt, &forward_char)) {
-    printf("Got write to LCD characteristic!\n");
-    // display_write("FORWARD", DISPLAY_LINE_1);
-  }
-  if (simple_ble_is_char_event(p_ble_evt, &back_char)) {
-    printf("Got write to LCD characteristic!\n");
-    // display_write("BACK", DISPLAY_LINE_1);
-    // kobukiDriveDirect(-100,-100);
-  }
-  if (simple_ble_is_char_event(p_ble_evt, &left_char)) {
-    printf("Got write to LCD characteristic!\n");
-    // display_write("LEFT", DISPLAY_LINE_1);
-    // kobukiDriveDirect(-100,100);
-  }
-  if (simple_ble_is_char_event(p_ble_evt, &right_char)) {
-    printf("Got write to LCD characteristic!\n");
-    // display_write("RIGHT", DISPLAY_LINE_1);
-    // kobukiDriveDirect(100,-100);
+  if (forward == true) {
+    state = FORWARD;
+  } else if (reverse == true) {
+    state = REVERSE;
+  } else if (left == true) {
+    state = LEFT;
+  } else if (right == true) {
+    state = RIGHT;
+  } else {
+    state = OFF;
   }
 }
 
 void print_state(states current_state){
 	switch(current_state){
-	case OFF:
-		display_write("OFF      ", DISPLAY_LINE_0);
-		break;
-  case ON:
-    display_write("ON       ", DISPLAY_LINE_0);
-    break;
-  case FORWARD:
-    display_write("FORWARD ", DISPLAY_LINE_0);
-    break;
-  case BACK:
-    display_write("BACK     ", DISPLAY_LINE_0);
-    break;
-  case LEFT:
-    display_write("LEFT     ", DISPLAY_LINE_0);
-    break;
-  case RIGHT:
-    display_write("RIGHT    ", DISPLAY_LINE_0);
-    break;
+  	case OFF: {
+  		display_write("OFF", DISPLAY_LINE_0);
+  		break;
     }
+    case FORWARD: {
+      display_write("FORWARD", DISPLAY_LINE_0);
+      break;
+    }
+    case REVERSE: {
+      display_write("REVERSE", DISPLAY_LINE_0);
+      break;
+    }
+    case LEFT: {
+      display_write("LEFT", DISPLAY_LINE_0);
+      break;
+    }
+    case RIGHT: {
+      display_write("RIGHT", DISPLAY_LINE_0);
+      break;
+    }
+  }
 }
 
 int main(void) {
@@ -128,6 +124,21 @@ int main(void) {
   simple_ble_add_service(&robot_service);
 
   // TODO: Register your characteristics
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(forward), (uint8_t*)&forward,
+      &robot_service, &forward_state_char);
+
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(reverse), (uint8_t*)&reverse,
+      &robot_service, &reverse_state_char);
+
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(left), (uint8_t*)&left,
+      &robot_service, &left_state_char);
+
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(right), (uint8_t*)&right,
+      &robot_service, &right_state_char);
 
   // Start Advertising
   simple_ble_adv_only_name();
@@ -169,25 +180,11 @@ int main(void) {
   kobukiInit();
   printf("Kobuki initialized!\n");
 
-  states state = OFF;
-  simple_ble_add_characteristic(1, 1, 0, 0,
-        sizeof(forward_state), (uint8_t*)&forward_state,
-        &robot_service, &forward_char);
-  simple_ble_add_characteristic(1, 1, 0, 0,
-        sizeof(back_state), (uint8_t*)&back_state,
-        &robot_service, &back_char);
-  simple_ble_add_characteristic(1, 1, 0, 0,
-        sizeof(left_state), (uint8_t*)&left_state,
-        &robot_service, &left_char);
-  simple_ble_add_characteristic(1, 1, 0, 0,
-        sizeof(right_state), (uint8_t*)&right_state,
-        &robot_service, &right_char);
-
   // loop forever, running state machine
   while (1) {
     // read sensors from robot
     int status = kobukiSensorPoll(&sensors);
-    printf("%u\n", right_state);
+
     // TODO: complete state machine
     switch(state) {
       case OFF: {
@@ -195,7 +192,7 @@ int main(void) {
 
         // transition logic
         if (is_button_pressed(&sensors)) {
-          state = ON;
+          // state = FORWARD;
         } else {
           state = OFF;
           // perform state-specific actions here
@@ -203,84 +200,53 @@ int main(void) {
         }
         break; // each case needs to end with break!
       }
-      case ON: {
+
+      case FORWARD: {
         print_state(state);
-        // transition logic
+
         if (is_button_pressed(&sensors)) {
           state = OFF;
-        } else if (forward_state) {
-          state = FORWARD;
-        } else if (back_state) {
-          state = BACK;
-        } else if (left_state) {
-          state = LEFT;
-        } else if (right_state) {
-          state = RIGHT;
         } else {
-          state = ON;
           // perform state-specific actions here
+          kobukiDriveDirect(100, 100);
         }
-        break;
+        break; // each case needs to end with break!
       }
-      case FORWARD : {
+
+      case REVERSE: {
         print_state(state);
+
         if (is_button_pressed(&sensors)) {
           state = OFF;
-        } else if (back_state) {
-          state = BACK;
-        } else if (left_state) {
-          state = LEFT;
-        } else if (right_state) {
-          state = RIGHT;
         } else {
-          kobukiDriveDirect(100,100);
+          // perform state-specific actions here
+          kobukiDriveDirect(-100, -100);
         }
-        break;
+        break; // each case needs to end with break!
       }
-      case BACK : {
+
+      case LEFT: {
         print_state(state);
+
         if (is_button_pressed(&sensors)) {
           state = OFF;
-        } else if (forward_state) {
-          state = FORWARD;
-        } else if (left_state) {
-          state = LEFT;
-        } else if (right_state) {
-          state = RIGHT;
         } else {
-          kobukiDriveDirect(-100,-100);
+          // perform state-specific actions here
+          kobukiDriveDirect(-100, 100);
         }
-        break;
+        break; // each case needs to end with break!
       }
-      case LEFT : {
+
+      case RIGHT: {
         print_state(state);
+
         if (is_button_pressed(&sensors)) {
           state = OFF;
-        } else if (back_state) {
-          state = BACK;
-        } else if (forward_state) {
-          state = FORWARD;
-        } else if (right_state) {
-          state = RIGHT;
         } else {
-          kobukiDriveDirect(-100,100);
+          // perform state-specific actions here
+          kobukiDriveDirect(100, -100);
         }
-        break;
-      }
-      case RIGHT : {
-        print_state(state);
-        if (is_button_pressed(&sensors)) {
-          state = OFF;
-        } else if (back_state) {
-          state = BACK;
-        } else if (left_state) {
-          state = LEFT;
-        } else if (forward_state) {
-          state = FORWARD;
-        } else {
-          kobukiDriveDirect(100,-100);
-        }
-        break;
+        break; // each case needs to end with break!
       }
     }
   }
