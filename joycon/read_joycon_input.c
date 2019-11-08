@@ -14,7 +14,7 @@
 /*
  * TODO:
  *   1. Add code to spawn a server socket
- *   2. Add code to fork/exec the client process to connect via BLE
+ *   2. Pipe the server socket number to parent
  *   3. Send the data over the socket connection as it arrives
  */
 

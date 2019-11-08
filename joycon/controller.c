@@ -22,6 +22,8 @@
 
 #define NUM_MAC_ADDRS 2
 
+#define SECOND_TO_MICROSECONDS 1000000
+
 // List of all the mac addresses for possible joy con pairings
 const char *mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
 
@@ -67,6 +69,9 @@ int main(int argc, char* argv[])
     assert (!res);
 
     while (true) {
+        struct timeval start_time;
+        struct timeval end_time;
+        gettimeofday (&start_time, NULL);
         // Find all paired devices
         struct hid_device_info *devices = hid_enumerate (0, 0);
         
@@ -114,8 +119,13 @@ int main(int argc, char* argv[])
             hid_free_enumeration (devices);
         }
 
-        // Add code to check if any processes exited
-        connection_node_t *node = processed_macs; 
+        // Iterate through the nodes and check all of the joycon_input_pids to determine
+        // if any of the processes have exited. If so clean up that process and queue that
+        // mac address up again as a possible mac address to check if a connection has been
+        // established.
+        connection_node_t *node = processed_macs;
+        
+        // Note we can't use a for loop here because it modify the linked list.
         while (node != NULL) {
             pid_t res = waitpid (node->joycon_input_pid, NULL, WNOHANG);
             /* A child process has exited. */
@@ -130,8 +140,15 @@ int main(int argc, char* argv[])
         }
 
         // We want to poll once every second for connections so sleep in the remaining time
-        // FIXME to account for time spent 
-        sleep (1);
+        gettimeofday (&end_time, NULL);
+        // Calculate how many microseconds are left for operations every second
+        // and sleep if any time is remaining
+        int time_remaining = SECOND_TO_MICROSECONDS - 
+            ((end_time.tv_sec - start_time.tv_sec) * SECOND_TO_MICROSECONDS
+            + (end_time.tv_usec - start_time.tv_usec));
+        if (time_remaining > 0) {
+            usleep (time_remaining);
+        }
     }
 
 	// Finalize the hidapi library
