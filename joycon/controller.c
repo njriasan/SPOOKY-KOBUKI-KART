@@ -88,16 +88,30 @@ int main(int argc, char* argv[])
                     node->joycon_input_pid = fork ();
                     if (node->joycon_input_pid == 0) {
                         // Spawned child process
-                        int write_fd = node->pipe_fds[1];
-                        char *path = device->path;
-                        handle_joycon (write_fd, path);
+                        // Close the unneeded read fd
+                        close (node->pipe_fds[0]);
+                        // Call the joycon handler
+                        handle_joycon (node->pipe_fds[1], device->path);
                         perror ("Connection lost");
                         exit (1);
                     } else if (node->joycon_input_pid > 0) {
                         // Close the write portion of the pipe
                         close (node->pipe_fds[1]);
                         printf ("Forked a new process.\n");
-                        // TODO: Add code to handle reading the server and spawning the new process
+                        // TODO: Add code to move this into a new thread
+                        char *server_num_ptr = (char *) &node->server_port;
+                        int read_size = 0;
+                        int curr_read = 0;
+                        while (read_size < sizeof (int32_t) && 
+                                (curr_read = read (node->pipe_fds[0], 
+                                                   server_num_ptr + read_size, 
+                                                   sizeof(int32_t) - read_size) > 0)) {
+                            read_size += curr_read;
+                        }
+                        printf ("%d\n", node->server_port);
+                        close (node->pipe_fds[0]);
+                        // TODO: Add code to spawn the BLE process
+
 
                     } else {
                         // If we error try again later

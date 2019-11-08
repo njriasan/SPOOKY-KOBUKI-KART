@@ -16,7 +16,7 @@ typedef struct connection_node {
     pid_t ble_output_pid;
     // port used by the serve to connect the joycon input
     // and ble processes
-    uint16_t server_port;
+    int32_t server_port;
     // ports used to pipe information back from the child joycon process
     // back to the controller to give its server node
     int pipe_fds[2];
