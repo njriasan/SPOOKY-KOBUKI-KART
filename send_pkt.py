@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 import struct
 import time
 from getpass import getpass
@@ -64,6 +65,8 @@ class RobotController():
 
         while True:
             pkt = self.sock.recv(12)
+            if (len(pkt) == 0):
+                sys.exit (1)
             #self.on_pkt_receive(pkt)
             print (pkt)
 

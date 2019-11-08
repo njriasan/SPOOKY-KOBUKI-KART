@@ -92,6 +92,10 @@ void read_hid_data (hid_device *actual_dev, unsigned char *response, unsigned in
                     response + total_data, size - total_data)) > 0) {
         total_data += curr_read;
     }
+    if (total_data == 0) {
+        perror ("Connection Lost");
+        exit (1);
+    }
 }
 
 
