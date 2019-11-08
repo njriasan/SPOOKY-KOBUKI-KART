@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include "hidapi/hidapi.h"
+#include "read_joycon_input.h"
 
 
 // Experimentation showed a msg size of 12 bytes per joycon input
@@ -18,56 +19,33 @@
  */
 
 
-int main(int argc, char* argv[])
-{
-    if (argc != 2) {
-        perror ("Usage: ./read_joycon_input <JOYCON_mac_addr>");
-        exit (1);
-    }
-    const char *mac_addr = argv[1];
-	int res;
+/*
+ * Highest level function for a process that handles all the outputs from the joycon.
+ */
+int handle_joycon(int write_pipe_fd, char *device_path) {
+    int res;
 
-	// Initialize the hidapi library
-	res = hid_init();
+    // Initialize the hidapi library
+    res = hid_init();
+    assert (!res);
 
-    // Find all paired devices
-    struct hid_device_info *devices = hid_enumerate (0, 0);
-    
-    struct hid_device_info *device = devices;
-
-    // Convert to wide string type
-    wchar_t *wideMac = malloc (strlen (mac_addr) + 1);
-    mbsrtowcs (wideMac, &mac_addr, strlen(mac_addr) + 1, NULL);
-
-    // Iterate through all the devices looking for our mac addr
-    while (device != NULL) {
-        // Check the mac addr
-        if (!wcscmp (device->serial_number, wideMac)) {
-            // Open the device if it matches
-            hid_device *actual_dev = hid_open_path (device->path);
-            assert (actual_dev);
-            // Load in each message
-            unsigned char response[MSG_SIZE];
-            int data_len;
-            while((data_len = hid_read (actual_dev, response, MSG_SIZE)) > 0) {
-                for (int i = 0; i < data_len; i++) {
-                    printf ("%x ", response[i]);
-                }
-                printf ("\n");
-            }
-            break;
-        } else {
-            device = device->next;
+    // open the actual device
+    hid_device *actual_dev = hid_open_path (device_path);
+    assert (actual_dev);
+    // Load in each message
+    unsigned char response[MSG_SIZE];
+    int data_len;
+    while((data_len = hid_read (actual_dev, response, MSG_SIZE)) > 0) {
+        for (int i = 0; i < data_len; i++) {
+            printf ("%x ", response[i]);
         }
-    }
-    printf ("Device not found\n");
-    if (devices != NULL) {
-        // Free the malloced data
-        hid_free_enumeration (devices);
+        printf ("\n");
     }
 
-	// Finalize the hidapi library
-	res = hid_exit();
+    // Finalize the hidapi library
+    res = hid_exit();
+    assert (!res);
 
-	return 1;
+    // This program shouldn't return unless we disconnect
+    return 1;
 }

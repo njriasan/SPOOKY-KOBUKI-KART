@@ -1,5 +1,13 @@
-read_joycon_input: read_joycon_input.c
-	gcc -g -o read_joycon_input read_joycon_input.c -lhidapi-hidraw
+CC=gcc
+FLAGS= -g -Wall
+LIBRARIES=-lhidapi-hidraw
+
+%.o: %.c
+	$(CC) $(FLAGS) -c $<
+	
+
+controller: connection.o controller.o read_joycon_input.o 
+	$(CC) $(FLAGS) -o $@ $^ $(LIBRARIES)
 
 clean:
-	rm read_joycon_input
+	rm controller *.o
