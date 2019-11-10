@@ -34,8 +34,6 @@ class ButtonState:
                 .format (self.name, self.output)
 
 
-# Button map for a toggleable button
-toggleable_states = {1: ButtonState(1, "PRESSED"), 0: ButtonState(0, "NOT PRESSED")}
 
 """
     A button is defined by a list of values that map to button states, the names/outputs
@@ -143,6 +141,20 @@ class Button:
                 .format (self.name, repr(self.mapping), hex(self.mask), \
                     self.byte_num, self.shift, self.state)
 
+    """
+        Prints the current status of the button
+    """
+    def display_status(self):
+        print("{} is {}".format(self.name, self.state))
+
+    """
+        Prints the current status of the button as long as it is not in the 
+        NOT PRESSED state.
+    """
+    def display_if_pressed(self):
+        if str(self.state) != "NOT PRESSED":
+            self.display_status()
+
 """
     A button that only has 2 states: pressed and not pressed. It is otherwise
     the same.
@@ -150,20 +162,41 @@ class Button:
 class ToggleButton(Button):
 
     def __init__(self, bit_list, name):
+        # Button map for a toggleable button
+        toggleable_states = {1: ButtonState(1, "PRESSED"), 0: ButtonState(0, "NOT PRESSED")}
         super().__init__(bit_list, toggleable_states, name)
 
 
 """
-    Sample class to contain information from a particular joycon
+    Sample class to contain information for a particular Controller
+"""
+class Controller:
+
+    def __init__(self, button_list):
+        
+
+"""
+    Sample class to contain information for a particular JoyCon
 """
 class JoyCon:
 
     """
-        To make sure each joycon is different we will create a new button
-        for each joycon.
+        To make sure each JoyCon is different we will create a new button
+        for each JoyCon.
     """
     def __init__(self):
-        x_button = ToggleButton([6], "x") 
+        self.buttons = []
+        x_button = ToggleButton([6], "x")
+        self.buttons.append (x_button)
         y_button = ToggleButton([5], "y")
+        self.buttons.append (y_button)
         a_button = ToggleButton([7], "a")
+        self.buttons.append (a_button)
         b_button = ToggleButton([4], "x")
+        self.buttons.append (b_button)
+        self._validate_unique_buttons()
+
+
+    """
+        Makes sure that all of the buttons for each J
+    """
