@@ -135,7 +135,7 @@ class Button:
                 .format(self.name, self.state)
 
     def __repr__(self):
-        return ("Button {}. It contains the following map of inputs to outputs {}.\n" \
+        return ("Button {}. It contains the following map of inputs to outputs\n {}.\n" \
                 + "It checks its state with the mask {} on byte {}, shifting by {} bits.\n" \
                 + "The button is currently in state {}") \
                 .format (self.name, repr(self.mapping), hex(self.mask), \
@@ -156,10 +156,24 @@ class Button:
     """
         Prints the current status of the button as long as it is not in the 
         NOT PRESSED state.
+
+        Returns if the status was printed.
     """
     def display_if_pressed(self):
         if str(self.state) != "NOT PRESSED":
             self.display_status()
+            return True
+        return False
+
+    """
+        Takes in an input 12 byte string and updates the value of the current
+        state.
+    """
+    def parse_next_state(self, input_msg):
+        assert (len(input_msg) == 12)
+        new_input = int(input_msg[self.byte_num] & self.mask) >> self.shift
+        assert(new_input in self.mapping)
+        self.state = self.mapping[new_input]
 
 """
     A button that only has 2 states: pressed and not pressed. It is otherwise
@@ -217,10 +231,47 @@ class Controller:
         assert(type(name) == str and len(name) > 0)
         return name
 
+
+    """
+        Parses a 12 byte input message and updates the state of each button.
+    """
+    def parse_next_state(self, input_msg):
+        for button in self.buttons:
+            button.parse_next_state(input_msg)
+
+    """
+        Returns the status of all buttons.
+    """
+    def return_status(self):
+        return [button.return_status() for button in self.buttons]
+
+    """
+        Prints the current status of all buttons.
+    """
+    def display_status(self):
+        for button in self.buttons:
+            button.display_status()
+
+    """
+        Prints the current status of buttons not in the NOT PRESSED state.
+
+        Prints out a message indicating no buttons were pressed if none are
+        displayed.
+    """
+    def display_all_pressed_buttons(self):
+        status = False
+        print("Current State:")
+        for button in self.buttons:
+            new_status = button.display_if_pressed()
+            status = status or new_status
+        if not status:
+            print("No buttons are currently pressed")
+        
+
 """
     Sample class to contain information for a particular JoyCon
 """
-class JoyCon:
+class JoyCon(Controller):
 
     """
         To make sure each JoyCon is different we will create a new button
@@ -228,17 +279,24 @@ class JoyCon:
     """
     def __init__(self):
         buttons = []
-        x_button = ToggleButton([6], "x")
-        buttons.append(x_button)
-        y_button = ToggleButton([5], "y")
-        buttons.append(y_button)
-        a_button = ToggleButton([7], "a")
-        buttons.append(a_button)
-        b_button = ToggleButton([4], "x")
-        buttons.append(b_button)
+        buttons.append(ToggleButton([14], "X"))
+        buttons.append(ToggleButton([12], "Y"))
+        buttons.append(ToggleButton([15], "A"))
+        buttons.append(ToggleButton([13], "B"))
+        buttons.append(ToggleButton([22], "+"))
+        buttons.append(ToggleButton([17], "R"))
+        buttons.append(ToggleButton([16], "RZ"))
+        buttons.append(ToggleButton([11], "SL"))
+        buttons.append(ToggleButton([10], "SR"))
+        buttons.append(ToggleButton([20], "STICK CLICK"))
+        buttons.append(ToggleButton([19], "HOME"))
+        # Only non toggle button we have is the analog stick
+        # Treating vericle as up we get the following map
+        stick_push_map = {0: ButtonState(0, "LEFT"), 1: ButtonState(1, "LEFT-UP"), \
+                2: ButtonState(2, "UP"), 3: ButtonState(3, "RIGHT-UP"), \
+                4: ButtonState(4, "RIGHT"), 5: ButtonState(5, "RIGHT-DOWN"), \
+                6: ButtonState(6, "DOWN"), 7: ButtonState(7, "LEFT-DOWN"), \
+                8: ButtonState(8, "NOT PRESSED")}
+        buttons.append(Button([28, 29, 30, 31], stick_push_map, "STICK PUSH"))
+        
         super().__init__(buttons, "JoyCon")
-
-
-    """
-        Makes sure that all of the buttons for each J
-    """

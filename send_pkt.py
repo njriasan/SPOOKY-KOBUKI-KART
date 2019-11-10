@@ -67,13 +67,14 @@ class RobotController():
 
         # Create a new Joycon
         controller = JoyCon()
+        controller.display_all_pressed_buttons()
 
         while True:
             pkt = self.sock.recv(12)
             if (len(pkt) == 0):
                 sys.exit (1)
-            #self.on_pkt_receive(pkt)
-            print (pkt)
+            controller.parse_next_state(pkt)
+            controller.display_all_pressed_buttons()
 
     def on_pkt_receive(self, pkt):
 
