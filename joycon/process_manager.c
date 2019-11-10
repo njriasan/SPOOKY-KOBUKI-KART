@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -50,7 +49,7 @@ static wchar_t **convert_to_wide_strings (const char **joycon_mac_addrs, size_t 
 int main(int argc, char* argv[])
 {
     if (argc != 1) {
-        perror ("Usage: ./controller");
+        fprintf (stderr, "Usage: ./controller\n");
         exit (1);
     }
     int res;

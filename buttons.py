@@ -61,7 +61,7 @@ class Button:
         Returns a tuple consisting of the byte that contains the value,
         the mask for extracting it, and the amount to shift to get the value.
     """
-    def _validate_bits(self, bit_list):
+    def _validate_bit_list(self, bit_list):
         # Check that we passed in a non-zero len list
         assert(type(bit_list) == list)
         assert(len(bit_list) > 0)
@@ -84,13 +84,13 @@ class Button:
         # the order given.
         ones_list = [7 - (bit_val % 8) for bit_val in bit_list]
         ones_list.sort(reverse=True)
-        assert (len(ones_list) == (ones_list[0] - ones_list[-1]))
+        assert (len(ones_list) == (ones_list[0] - ones_list[-1] + 1))
         # Select our shift value
         shift_value = ones_list[-1]
         # Construct our mask
         mask = 0
-        for shift_val in ones_list:
-            mask += (1 << bit)
+        for on_bit in ones_list:
+            mask += (1 << on_bit)
         return byte_num, mask, shift_value
 
     """
@@ -104,7 +104,7 @@ class Button:
     def _validate_map(self, states_map):
         assert(type(states_map) == dict and len(states_map) > 0)
         # Determine the max value possible for the input
-        max_value = self.mask >> self.shift_value
+        max_value = self.mask >> self.shift
         # Define the not pressed state
         not_pressed_state = None
         # Create a set for the possible states and inputs
@@ -163,7 +163,7 @@ class JoyCon:
         for each joycon.
     """
     def __init__(self):
-        x_button = ToggleButton([0], "x") 
-        y_button = ToggleButton([0], "y")
-        a_button = ToggleButton([0], "")
-        b_button = ToggleButton([0], "x")
+        x_button = ToggleButton([6], "x") 
+        y_button = ToggleButton([5], "y")
+        a_button = ToggleButton([7], "a")
+        b_button = ToggleButton([4], "x")
