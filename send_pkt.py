@@ -7,6 +7,8 @@ from bluepy.btle import Peripheral, DefaultDelegate
 import argparse
 import socket
 
+from buttons import Joycon
+
 parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
 parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
 parser.add_argument('server_port', metavar='P', type=int, help='Port to connect to bluetooth endpoint')
@@ -62,6 +64,9 @@ class RobotController():
         # will call on_pkt_receive
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(('localhost', server_port))
+
+        # Create a new Joycon
+        controller = JoyCon()
 
         while True:
             pkt = self.sock.recv(12)

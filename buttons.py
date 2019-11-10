@@ -142,3 +142,28 @@ class Button:
                 + "The button is currently in state {}") \
                 .format (self.name, repr(self.mapping), hex(self.mask), \
                     self.byte_num, self.shift, self.state)
+
+"""
+    A button that only has 2 states: pressed and not pressed. It is otherwise
+    the same.
+"""
+class ToggleButton(Button):
+
+    def __init__(self, bit_list, name):
+        super().__init__(bit_list, toggleable_states, name)
+
+
+"""
+    Sample class to contain information from a particular joycon
+"""
+class JoyCon:
+
+    """
+        To make sure each joycon is different we will create a new button
+        for each joycon.
+    """
+    def __init__(self):
+        x_button = ToggleButton([0], "x") 
+        y_button = ToggleButton([0], "y")
+        a_button = ToggleButton([0], "")
+        b_button = ToggleButton([0], "x")
