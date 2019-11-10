@@ -61,7 +61,7 @@ class Button:
     """
     def _validate_bit_list(self, bit_list):
         # Check that we passed in a non-zero len list
-        assert(type(bit_list) == list)
+        assert(isinstance(bit_list, list))
         assert(len(bit_list) > 0)
         bit_set = set()
         # Check that every bit is an int
@@ -110,7 +110,7 @@ class Button:
         states = set()
         for input_val, state in states_map.items():
             assert(type(input_val) == int)
-            assert(type(state) == ButtonState)
+            assert(isinstance(state, ButtonState))
             assert(0 <= input_val <= max_value)
             if str(state) == "NOT PRESSED":
                 not_pressed_state = state
@@ -142,10 +142,16 @@ class Button:
                     self.byte_num, self.shift, self.state)
 
     """
+        Returns the status of the button.
+    """
+    def return_status(self):
+        return "{} is in state {}".format(self.name, self.state)
+
+    """
         Prints the current status of the button
     """
     def display_status(self):
-        print("{} is {}".format(self.name, self.state))
+        print(self.return_status())
 
     """
         Prints the current status of the button as long as it is not in the 
@@ -172,8 +178,44 @@ class ToggleButton(Button):
 """
 class Controller:
 
-    def __init__(self, button_list):
-        
+    def __init__(self, button_list, name):
+        self.buttons = self._validate_button_list(button_list)
+        self.name = self._validate_name (name)
+
+    """
+        Function that validates that all the buttons in a button
+        list are not reading from overlapping input values and
+        that all the names are unique.
+
+        Returns the list of buttons
+    """
+    def _validate_button_list(self, button_list):
+        assert(isinstance(button_list, list) and len(button_list) > 0)
+        # Verify that all bits and names are unique
+        name_set = set()
+        bits_set = set()
+        for i, button in enumerate(button_list):
+            assert(isinstance(button, Button))
+            name_set.add(button.name)
+            mask = button.mask
+            byte_bits = 8 * button.byte_num
+            for ctr in range(8):
+                bit_offset = 7 - ctr
+                if mask & (1 << bit_offset):
+                    bit = byte_bits + bit_offset
+                    assert (bit not in bits_set)
+                    bits_set.add(bit)
+        assert(len(name_set) == len(button_list))
+        return button_list
+
+    """
+        Function that validates that the name is a string that is not empty
+
+        Returns the same string.
+    """
+    def _validate_name(self, name):
+        assert(type(name) == str and len(name) > 0)
+        return name
 
 """
     Sample class to contain information for a particular JoyCon
@@ -185,16 +227,16 @@ class JoyCon:
         for each JoyCon.
     """
     def __init__(self):
-        self.buttons = []
+        buttons = []
         x_button = ToggleButton([6], "x")
-        self.buttons.append (x_button)
+        buttons.append(x_button)
         y_button = ToggleButton([5], "y")
-        self.buttons.append (y_button)
+        buttons.append(y_button)
         a_button = ToggleButton([7], "a")
-        self.buttons.append (a_button)
+        buttons.append(a_button)
         b_button = ToggleButton([4], "x")
-        self.buttons.append (b_button)
-        self._validate_unique_buttons()
+        buttons.append(b_button)
+        super().__init__(buttons, "JoyCon")
 
 
     """
