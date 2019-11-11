@@ -7,6 +7,8 @@ from bluepy.btle import Peripheral, DefaultDelegate
 import argparse
 import socket
 
+from buttons import JoyCon
+
 parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
 parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
 parser.add_argument('server_port', metavar='P', type=int, help='Port to connect to bluetooth endpoint')
@@ -28,8 +30,6 @@ class RobotController():
 
     def __init__(self, address, server_port):
 
-        # robot refers to buckler, our peripheral
-        #self.robot = Peripheral(addr)
         print("connected")
                         
         # keep state for keypresses
@@ -63,12 +63,19 @@ class RobotController():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(('localhost', server_port))
 
+        # Create a new Joycon
+        controller = JoyCon()
+        controller.display_all_pressed_buttons()
+
+        # robot refers to buckler, our peripheral
+        #self.robot = Peripheral(addr)
+
         while True:
             pkt = self.sock.recv(12)
             if (len(pkt) == 0):
                 sys.exit (1)
-            #self.on_pkt_receive(pkt)
-            print (pkt)
+            controller.parse_next_state(pkt)
+            controller.display_all_pressed_buttons()
 
     def on_pkt_receive(self, pkt):
 

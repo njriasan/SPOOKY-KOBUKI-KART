@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -50,7 +49,7 @@ static wchar_t **convert_to_wide_strings (const char **joycon_mac_addrs, size_t 
 int main(int argc, char* argv[])
 {
     if (argc != 1) {
-        perror ("Usage: ./controller");
+        fprintf (stderr, "Usage: ./controller\n");
         exit (1);
     }
     int res;
@@ -169,7 +168,20 @@ int main(int argc, char* argv[])
                 append_to_front (&unprocessed_macs, node); 
                 node = new_node;
             } else {
-                node = node->next;
+                // If the client has exited instead restart both processes
+                pid_t res = waitpid (node->ble_output_pid, NULL, WNOHANG);
+                /* A child process has exited. */
+                if (res > 0) {
+                    /* kill off the python client as well. */
+                    kill (node->joycon_input_pid, SIGKILL);
+                    waitpid (node->joycon_input_pid, NULL, 0);
+                    connection_node_t *new_node = node->next;
+                    remove_node (&processed_macs, node);
+                    append_to_front (&unprocessed_macs, node); 
+                    node = new_node;
+                } else {
+                    node = node->next;
+                }
             }
         }
 
