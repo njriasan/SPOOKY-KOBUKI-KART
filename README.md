@@ -29,3 +29,40 @@ $ sudo ./process_manager
 Note that the last step must be run as a root user or else we cannot access information on hid devices. At this point nothing will occur until a joycon is connected. Once you have connected to a joycon over bluetooth you will see an output that a process has spawned and probably that a python script has launched. You should now be able to view output when a button is pressed.
 
 We do not yet connect to the Kobukis so the mac address can be any string. This should then output connected. At this point is you press buttons on your joycon you should a 12 byte stream print in the terminal in which your client is located.
+
+## BLE Characteristic
+
+For connecting to the Kobuki we will have a single characteristic representing the state of all buttons on the Joy Con. All the buttons on a joycon only occupy 15 bits of a switch message, so we will specify everything in a 2 byte message.
+
+This is the breakdown of the 2 Bytes (calling the MSB of the first byte bit 0 and the LSB of the second byte bit 15).
+  *  Bit 0: UNUSED (always 0)
+  *  Bit 1: HOME
+  *  Bit 2: STICK CLICK
+  *  Bits 3-7: STICK PUSH 
+  *  Bit 8: SL
+  *  Bit 9: SR
+  *  Bit 10: R
+  *  Bit 11: +
+  *  Bit 12: X
+  *  Bit 13: Y
+  *  Bit 14: A
+  *  Bit 15: B
+
+All buttons except the stick pushes are toggleable buttons (pressed or not pressed). For all of those buttons a bit value of 1 means pressed and 0 means not pressed.
+
+For the stick push we have following mapping (treating the direction in which the letters can be read as our access) of direction to output values:
+
+  * LEFT: 0
+  * LEFT-UP: 1
+  * UP: 2
+  * RIGHT-UP: 3
+  * RIGHT: 4
+  * RIGHT-DOWN: 5
+  * DOWN: 6
+  * LEFT-DOWN: 7
+  * NOT PRESSED: 8
+  * UNUSED: 9-15
+
+To illustrate this, if the controller currently has the stick pressed in the down direction, and the R, X, and Home buttons are pressed, then the following message in hex will be delivered:
+
+0x4628

@@ -30,8 +30,6 @@ class RobotController():
 
     def __init__(self, address, server_port):
 
-        # robot refers to buckler, our peripheral
-        #self.robot = Peripheral(addr)
         print("connected")
                         
         # keep state for keypresses
@@ -68,6 +66,9 @@ class RobotController():
         # Create a new Joycon
         controller = JoyCon()
         controller.display_all_pressed_buttons()
+
+        # robot refers to buckler, our peripheral
+        #self.robot = Peripheral(addr)
 
         while True:
             pkt = self.sock.recv(12)
