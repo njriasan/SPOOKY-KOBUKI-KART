@@ -76,7 +76,9 @@ class RobotController():
                 sys.exit (1)
             controller.parse_next_state(pkt)
             controller.display_all_pressed_buttons()
-            print (hex(controller.get_output_message()))
+            for byte in controller.get_output_message():
+                print ("{} ".format(hex(byte)), end="")
+            print()
 
     def on_pkt_receive(self, pkt):
 

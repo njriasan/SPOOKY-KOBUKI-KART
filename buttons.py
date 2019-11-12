@@ -50,7 +50,7 @@ class ButtonState:
     The output bits are similar except we are between bytes 0-1.
 """
 class Button:
-    def __init__(self, input_bit_list, output_bit_list button_states_map, name):
+    def __init__(self, input_bit_list, output_bit_list, button_states_map, name):
         self.input_byte_num, self.input_mask, self.input_shift = self._validate_bit_list (input_bit_list, 11)
         self.output_byte_num, self.output_mask, self.output_shift = self._validate_bit_list (output_bit_list, 1)
         self.mapping, self.state = self._validate_map (button_states_map)
@@ -188,8 +188,10 @@ class Button:
         assert (len(output_msg) == 2)
         added_input = (self.state.output << self.output_shift)
         # Zero out all the bits we occupy
-        output_msg[self.output_byte] = output_msg[self.output_byte] & ~(self.output_mask)
-        output_msg[self.output_byte] = output_msg[self.output_byte] | added_input
+        output_byte = int(output_msg[self.output_byte_num] & ~(self.output_mask))
+        # Or the bits
+        output_byte = output_byte | added_input
+        return output_msg[0:self.output_byte_num] + bytearray([output_byte]) + output_msg[self.output_byte_num+1:]
 
 
 
@@ -225,18 +227,25 @@ class Controller:
         assert(isinstance(button_list, list) and len(button_list) > 0)
         # Verify that all bits and names are unique
         name_set = set()
-        bits_set = set()
+        input_bits_set = set()
+        output_bits_set = set()
         for i, button in enumerate(button_list):
             assert(isinstance(button, Button))
             name_set.add(button.name)
-            mask = button.mask
-            byte_bits = 8 * button.byte_num
+            input_mask = button.input_mask
+            output_mask = button.output_mask
+            input_byte_bits = 8 * button.input_byte_num
+            output_byte_bits = 8 * button.output_byte_num
             for ctr in range(8):
                 bit_offset = 7 - ctr
-                if mask & (1 << bit_offset):
-                    bit = byte_bits + bit_offset
-                    assert (bit not in bits_set)
-                    bits_set.add(bit)
+                if input_mask & (1 << bit_offset):
+                    bit = input_byte_bits + bit_offset
+                    assert (bit not in input_bits_set)
+                    input_bits_set.add(bit)
+                if output_mask & (1 <<bit_offset): 
+                    bit = output_byte_bits + bit_offset
+                    assert (bit not in output_bits_set)
+                    output_bits_set.add(bit)
         assert(len(name_set) == len(button_list))
         return button_list
 
@@ -290,8 +299,8 @@ class Controller:
     """
     def get_output_message(self):
         output_msg = bytes([0, 0])
-        for button in self.buttons.values():
-            button.append_output(output_msg)
+        for button in self.buttons:
+            output_msg = button.append_output(output_msg)
         return output_msg
 
 """
@@ -305,17 +314,17 @@ class JoyCon(Controller):
     """
     def __init__(self):
         buttons = []
-        buttons.append(ToggleButton([14], "X"))
-        buttons.append(ToggleButton([12], "Y"))
-        buttons.append(ToggleButton([15], "A"))
-        buttons.append(ToggleButton([13], "B"))
-        buttons.append(ToggleButton([22], "+"))
-        buttons.append(ToggleButton([17], "R"))
-        buttons.append(ToggleButton([16], "RZ"))
-        buttons.append(ToggleButton([11], "SL"))
-        buttons.append(ToggleButton([10], "SR"))
-        buttons.append(ToggleButton([20], "STICK CLICK"))
-        buttons.append(ToggleButton([19], "HOME"))
+        buttons.append(ToggleButton([14], [12], "X"))
+        buttons.append(ToggleButton([12], [13], "Y"))
+        buttons.append(ToggleButton([15], [14], "A"))
+        buttons.append(ToggleButton([13], [15], "B"))
+        buttons.append(ToggleButton([22], [3], "+"))
+        buttons.append(ToggleButton([17], [10], "R"))
+        buttons.append(ToggleButton([16], [11], "RZ"))
+        buttons.append(ToggleButton([11], [8], "SL"))
+        buttons.append(ToggleButton([10], [9], "SR"))
+        buttons.append(ToggleButton([20], [2], "STICK CLICK"))
+        buttons.append(ToggleButton([19], [1], "HOME"))
         # Only non toggle button we have is the analog stick
         # Treating vericle as up we get the following map
         stick_push_map = {0: ButtonState(0, "LEFT"), 1: ButtonState(1, "LEFT-UP"), \
@@ -323,6 +332,6 @@ class JoyCon(Controller):
                 4: ButtonState(4, "RIGHT"), 5: ButtonState(5, "RIGHT-DOWN"), \
                 6: ButtonState(6, "DOWN"), 7: ButtonState(7, "LEFT-DOWN"), \
                 8: ButtonState(8, "NOT PRESSED")}
-        buttons.append(Button([28, 29, 30, 31], stick_push_map, "STICK PUSH"))
+        buttons.append(Button([28, 29, 30, 31], [4, 5, 6 ,7], stick_push_map, "STICK PUSH"))
         
         super().__init__(buttons, "JoyCon")
