@@ -38,11 +38,12 @@ This is the breakdown of the 2 Bytes (calling the MSB of the first byte bit 0 an
   *  Bit 0: UNUSED (always 0)
   *  Bit 1: HOME
   *  Bit 2: STICK CLICK
-  *  Bits 3-7: STICK PUSH 
+  *  Bit 3: +
+  *  Bits 4-7: STICK PUSH 
   *  Bit 8: SL
   *  Bit 9: SR
   *  Bit 10: R
-  *  Bit 11: +
+  *  Bit 11: RZ
   *  Bit 12: X
   *  Bit 13: Y
   *  Bit 14: A
