@@ -39,16 +39,20 @@ class ButtonState:
     A button is defined by a list of values that map to button states, the names/outputs
     cannot repeat for an individual button and there must be a button with name "NOT PRESSED".
 
-    Additionally a button also contains a list of bits, which correspond to the bits in the packet
-    sent by the Joy Con which contains the state information. Because the Joy Con sends all the info
-    for a particular button in the same byte all bits listed must be contiguous and in the same byte.
+    Additionally a button also contains 2 lists of bits, which correspond to the bits in the packet
+    sent by the Joy Con which contains the state information and the bits in the output BLE packet it occupies. 
+    Because the Joy Con sends all the info for a particular button in the same byte all bits listed must 
+    be contiguous and in the same byte.
 
     Additionally we define bits relative to the 12 byte packet sent by the Joy Con. We define the MSB
     of the 0th byte as bit 0 and the LSB of the 11 byte as bit 95.
+
+    The output bits are similar except we are between bytes 0-1.
 """
 class Button:
-    def __init__(self, bit_list, button_states_map, name):
-        self.byte_num, self.mask, self.shift = self._validate_bit_list (bit_list)
+    def __init__(self, input_bit_list, output_bit_list button_states_map, name):
+        self.input_byte_num, self.input_mask, self.input_shift = self._validate_bit_list (input_bit_list, 11)
+        self.output_byte_num, self.output_mask, self.output_shift = self._validate_bit_list (output_bit_list, 1)
         self.mapping, self.state = self._validate_map (button_states_map)
         self.name = self._validate_name (name)
 
@@ -59,7 +63,7 @@ class Button:
         Returns a tuple consisting of the byte that contains the value,
         the mask for extracting it, and the amount to shift to get the value.
     """
-    def _validate_bit_list(self, bit_list):
+    def _validate_bit_list(self, bit_list, max_byte):
         # Check that we passed in a non-zero len list
         assert(isinstance(bit_list, list))
         assert(len(bit_list) > 0)
@@ -75,7 +79,7 @@ class Button:
         # Select the byte referred to
         byte_num = byte_list[0]
         # Make sure we are within the first 12 bytes
-        assert (0 <= byte_num <= 11)
+        assert (0 <= byte_num <= max_byte)
         for i in byte_list[1:]:
             assert(i == byte_num)
         # Check that all bits are contiguous. We don't care about
@@ -102,7 +106,7 @@ class Button:
     def _validate_map(self, states_map):
         assert(type(states_map) == dict and len(states_map) > 0)
         # Determine the max value possible for the input
-        max_value = self.mask >> self.shift
+        max_value = self.input_mask >> self.input_shift
         # Define the not pressed state
         not_pressed_state = None
         # Create a set for the possible states and inputs
@@ -137,9 +141,11 @@ class Button:
     def __repr__(self):
         return ("Button {}. It contains the following map of inputs to outputs\n {}.\n" \
                 + "It checks its state with the mask {} on byte {}, shifting by {} bits.\n" \
+                + "It outputs its state with the mask {} on byte {}, shifting by {} bits.\n" \
                 + "The button is currently in state {}") \
-                .format (self.name, repr(self.mapping), hex(self.mask), \
-                    self.byte_num, self.shift, self.state)
+                .format (self.name, repr(self.mapping), hex(self.input_mask), \
+                    self.input_byte_num, self.input_shift, hex(self.output_mask), \
+                    self.output_byte_num, self.output_shift, self.state)
 
     """
         Returns the status of the button.
@@ -171,9 +177,21 @@ class Button:
     """
     def parse_next_state(self, input_msg):
         assert (len(input_msg) == 12)
-        new_input = int(input_msg[self.byte_num] & self.mask) >> self.shift
+        new_input = int(input_msg[self.input_byte_num] & self.input_mask) >> self.input_shift
         assert(new_input in self.mapping)
         self.state = self.mapping[new_input]
+
+    """
+        Takes in a message and appends the output in the right location.
+    """
+    def append_output(self, output_msg):
+        assert (len(output_msg) == 2)
+        added_input = (self.state.output << self.output_shift)
+        # Zero out all the bits we occupy
+        output_msg[self.output_byte] = output_msg[self.output_byte] & ~(self.output_mask)
+        output_msg[self.output_byte] = output_msg[self.output_byte] | added_input
+
+
 
 """
     A button that only has 2 states: pressed and not pressed. It is otherwise
@@ -181,10 +199,10 @@ class Button:
 """
 class ToggleButton(Button):
 
-    def __init__(self, bit_list, name):
+    def __init__(self, input_bit_list, output_bit_list, name):
         # Button map for a toggleable button
         toggleable_states = {1: ButtonState(1, "PRESSED"), 0: ButtonState(0, "NOT PRESSED")}
-        super().__init__(bit_list, toggleable_states, name)
+        super().__init__(input_bit_list, output_bit_list, toggleable_states, name)
 
 
 """
@@ -266,7 +284,15 @@ class Controller:
             status = status or new_status
         if not status:
             print("No buttons are currently pressed")
-        
+    
+    """
+        Constructs the output message to send over BLE to the Kobuki. 
+    """
+    def get_output_message(self):
+        output_msg = bytes([0, 0])
+        for button in self.buttons.values():
+            button.append_output(output_msg)
+        return output_msg
 
 """
     Sample class to contain information for a particular JoyCon
