@@ -51,16 +51,16 @@ This is the breakdown of the 2 Bytes (calling the MSB of the first byte bit 0 an
 
 All buttons except the stick pushes are toggleable buttons (pressed or not pressed). For all of those buttons a bit value of 1 means pressed and 0 means not pressed.
 
-For the stick push we have following mapping (treating the direction in which the letters can be read as our access) of direction to output values:
+For the stick push we have following mapping (treating towards buttons as being right) of direction to output values:
 
-  * LEFT: 0
-  * LEFT-UP: 1
-  * UP: 2
-  * RIGHT-UP: 3
-  * RIGHT: 4
-  * RIGHT-DOWN: 5
-  * DOWN: 6
-  * LEFT-DOWN: 7
+  * UP: 0
+  * RIGHT-UP: 1
+  * RIGHT: 2
+  * RIGHT-DOWN: 3
+  * DOWN: 4
+  * LEFT-DOWN: 5
+  * LEFT: 6
+  * LEFT-UP: 7
   * NOT PRESSED: 8
   * UNUSED: 9-15
 
