@@ -64,6 +64,6 @@ For the stick push we have following mapping (treating towards buttons as being 
   * NOT PRESSED: 8
   * UNUSED: 9-15
 
-To illustrate this, if the controller currently has the stick pressed in the down direction, and the R, X, and Home buttons are pressed, then the following message in hex will be delivered:
+To illustrate this, if the controller currently has the stick pressed in the left direction, and the R, X, and Home buttons are pressed, then the following message in hex will be delivered:
 
 0x4628
