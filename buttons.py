@@ -9,7 +9,7 @@
     both joycons are basically symmetric (and directional pad may get confusing).
 
     Note when refering to the direction of the directional stick we will refer to the direction towards
-    the buttons as up.
+    the buttons as right.
 """
 
 """
@@ -47,7 +47,8 @@ class ButtonState:
     Additionally we define bits relative to the 12 byte packet sent by the Joy Con. We define the MSB
     of the 0th byte as bit 0 and the LSB of the 11 byte as bit 95.
 
-    The output bits are similar except we are between bytes 0-1.
+    The output bits are similar except we are between bytes 0-1 and output bits are allowed to overlap
+    for mutually exclusive buttons between the left and right Joy Con.
 """
 class Button:
     def __init__(self, input_bit_list, output_bit_list, button_states_map, name):
@@ -322,11 +323,11 @@ class JoyCon(Controller):
         buttons.append(ToggleButton([22], [3], "+"))
         buttons.append(ToggleButton([23], [3], "-"))
         # Only non toggle button we have is the analog stick
-        # Treating vericle as up we get the following map
-        stick_push_map = {0: ButtonState(0, "LEFT"), 1: ButtonState(1, "LEFT-UP"), \
-                2: ButtonState(2, "UP"), 3: ButtonState(3, "RIGHT-UP"), \
-                4: ButtonState(4, "RIGHT"), 5: ButtonState(5, "RIGHT-DOWN"), \
-                6: ButtonState(6, "DOWN"), 7: ButtonState(7, "LEFT-DOWN"), \
+        # Treating towards the button as right we get the following mapping
+        stick_push_map = {0: ButtonState(0, "UP"), 1: ButtonState(1, "RIGHT-UP"), \
+                2: ButtonState(2, "RIGHT"), 3: ButtonState(3, "RIGHT-DOWN"), \
+                4: ButtonState(4, "DOWN"), 5: ButtonState(5, "LEFT-DOWN"), \
+                6: ButtonState(6, "LEFT"), 7: ButtonState(7, "LEFT-UP"), \
                 8: ButtonState(8, "NOT PRESSED")}
         buttons.append(Button([28, 29, 30, 31], [4, 5, 6 ,7], stick_push_map, "STICK PUSH"))
         
