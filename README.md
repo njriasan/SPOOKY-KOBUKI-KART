@@ -16,6 +16,14 @@ This process manager should then launch a BLE endpoint python, which will connec
 
 First make sure you have followed the installation instructions for `hidapi`. 
 
+After you have installed `hidapi` you may need to run
+
+```
+$ sudo ldconfig
+```
+
+from terminal to ensure the library can be found.
+
 Next you need to also install `python3` and to run the python script you need to `pip3 install` all necessary dependencies (for example `pybluez`). Note because this runs in `sudo` you may need to `sudo pip3 install` to get the installations on the sudo version.
 
 Then the following series of commands will execute the process manager (which we assume is perminantly running on the Raspberry Pi).
