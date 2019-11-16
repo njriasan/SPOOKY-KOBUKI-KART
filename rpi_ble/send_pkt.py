@@ -46,7 +46,7 @@ class RobotController():
         controller.display_all_pressed_buttons()
 
         # robot refers to buckler, our peripheral
-        #self.robot = Peripheral(addr)
+        self.robot = Peripheral(addr)
 
         while True:
             pkt = self.sock.recv(12)
@@ -57,9 +57,9 @@ class RobotController():
             sys.exit (1)
         controller.parse_next_state(pkt)
         controller.display_all_pressed_buttons()
-        for byte in controller.get_output_message():
-            print ("{} ".format(hex(byte)), end="")
-        print()
+        #for byte in controller.get_output_message():
+        #    print ("{} ".format(hex(byte)), end="")
+        #print()
         
         self.controller_characteristic.write(controller.get_output_message())
 

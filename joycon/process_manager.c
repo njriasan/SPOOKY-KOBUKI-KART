@@ -27,7 +27,7 @@
 const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
 
 // List of all MAC addresses for the bucklers (replace me later)
-const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
+const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:49:49:11", "04:03:d6:7a:b8:75"};
 
 static connection_node_t *unprocessed_macs = NULL;
 static connection_node_t *processed_macs = NULL;

@@ -29,6 +29,8 @@
 
 #include "states.h"
 
+#define NUM_BUTTONS 4
+
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -56,17 +58,17 @@ static simple_ble_service_t robot_service = {{
 
 // TODO: Declare control characteristic and variable for our service
 static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
-static uint8_t controller_bytes;
+static uint16_t controller_bytes;
 
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
-static bool controls = {false, false, false, false};
-static uint8_t masks[] = {0b1, 0b1 << 3, 0b11 << 10, 0b1 << 11};
+static bool controls[NUM_BUTTONS] = {false, false, false, false};
+static uint16_t masks[NUM_BUTTONS] = {0b1, 0b1 << 3, 0b11 << 10, 0b1 << 11};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
-  for (int i = 0; i < sizeof(masks), i++) {
+  for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     controls[i] = controller_bytes & masks[i];
   }
 
