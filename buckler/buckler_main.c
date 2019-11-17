@@ -63,26 +63,42 @@ static uint16_t controller_bytes;
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
+// This is incomplete, just a basic mapping to go forward and turn
+
+// Buttons are X (accelerate), B (decelerate), Left, Right
 static bool controls[NUM_BUTTONS] = {false, false, false, false};
-static uint16_t masks[NUM_BUTTONS] = {0b1, 0b1 << 3, 0b11 << 10, 0b1 << 11};
+static uint16_t masks[NUM_BUTTONS] = {0b1 << 3, 0b1, 0b11 << 10, 0b1 << 11};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
+    // TODO: for the stick presses, we need to do equality checks instead
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     controls[i] = controller_bytes & masks[i];
   }
 
+  // TODO: There's no rest state at the moment, we are just constantly decelerating but hitting th floor of 0
   if (controls[0] == true) {
-    if (controls[2] == true) {
-      state = LEFT;
-    } else if (controls[3] == true) {
-      state = RIGHT;
-    } else {
-      state = ACCELERATE;
-    }
-  } else if (controls[1] == true) {
-    state = DECELERATE;
+    // Acclerating
+    on_X_press();
+  } else if (p_fsm.state == REST) {
+    rest();
+  } else {
+    // Decelerate
+    on_X_release();
   }
+
+  if (controls[2] == true) {
+    // Turning Left
+    on_l_stick_press();
+  } else if (controls[3] == true) {
+    // Turning right
+    on_r_stick_press();
+  } else {
+    // Go straight
+    on_stick_release();
+  }
+
+  drive();
 }
 
 void print_state(states current_state){
