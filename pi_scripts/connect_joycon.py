@@ -1,7 +1,8 @@
+from time import sleep
 import subprocess
 import tempfile
 
-joycon_macs = ["04:03:D6:7B:59:CA"]
+joycon_macs = ["04:03:D6:7B:59:CA", "04:03:D6:7A:B8:75"]
 
 
 
@@ -18,8 +19,14 @@ def scan_joycons():
 def connect_joycon(addr):
   print (addr)
   with tempfile.TemporaryFile("w+") as f:
-    print("connect {}".format(addr), file=f)
+    print("connect {0}".format(addr), file=f)
     f.seek (0, 0)
     subprocess.call (["bluetoothctl"], stdin=f)
 
-scan_joycons ()
+def main():
+  while True:
+    scan_joycons ()
+    sleep (1)
+
+if __name__ == "__main__":
+  main()
