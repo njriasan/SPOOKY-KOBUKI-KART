@@ -73,15 +73,21 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t stick_push_button = {"STICK PUSH", 0xb1111 << 8, 8, 8};
+static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
 static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &stick_push_button };
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
+  //printf("%x\n", stick_push_button.value);
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
+    uint8_t *bytes_look = (uint8_t *) &controller_bytes;
+    //printf("%x\n", stick_push_button.value);
+  	//printf("%x %x\n", bytes_look[0], bytes_look[1]);
+  	//printf("\n\n");
+
 
   if (x_button.value == 1) {
     if (stick_push_button.value == 6) {
@@ -93,6 +99,8 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
     }
   } else if (b_button.value == 1) {
     state = DECELERATE;
+  } else {
+  	state = OFF;
   }
 }
 
@@ -208,7 +216,7 @@ int main(void) {
           state = OFF;
         } else {
           // perform state-specific actions here
-          kobukiDriveDirect(100, 100);
+          kobukiDriveDirect(700, 700);
         }
         break; // each case needs to end with break!
       }
@@ -232,7 +240,7 @@ int main(void) {
           state = OFF;
         } else {
           // perform state-specific actions here
-          kobukiDriveDirect(-50, 100);
+          kobukiDriveDirect(650, 700);
         }
         break; // each case needs to end with break!
       }
@@ -244,7 +252,7 @@ int main(void) {
           state = OFF;
         } else {
           // perform state-specific actions here
-          kobukiDriveDirect(100, -50);
+          kobukiDriveDirect(700, 650);
         }
         break; // each case needs to end with break!
       }
