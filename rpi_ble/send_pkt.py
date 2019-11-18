@@ -58,9 +58,9 @@ class RobotController():
             sys.exit (1)
         self.controller.parse_next_state(pkt)
         self.controller.display_all_pressed_buttons()
-        #for byte in self.controller.get_output_message():
-        #    print ("{} ".format(hex(byte)), end="")
-        #print()
+        for byte in self.controller.get_output_message():
+            print ("{} ".format(hex(byte)), end="")
+        print()
         
         self.controller_characteristic.write(self.controller.get_output_message())
 
