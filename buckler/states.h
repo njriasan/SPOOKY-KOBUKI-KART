@@ -1,5 +1,5 @@
-#ifndef STATES_H_
-#define STATES_H_
+#ifndef STATES_H
+#define STATES_H
 
 #include <stdio.h>
 

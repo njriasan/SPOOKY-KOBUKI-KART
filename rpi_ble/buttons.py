@@ -295,7 +295,7 @@ class Controller:
         output_msg = bytes([0, 0])
         for button in self.buttons:
             output_msg = button.append_output(output_msg)
-        return output_msg
+        return bytearray([output_msg[1]] + [output_msg[0]])
 
 """
     Sample class to contain information for a particular JoyCon

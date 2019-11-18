@@ -12,9 +12,24 @@
 power_fsm p_fsm;
 turning_fsm t_fsm;
 
+void init_power_fsm(power_fsm *fsm) {
+	fsm->state = REST;
+	fsm->p = 0.0f;
+	fsm->p_dot = 0.0f;
+	fsm->p_max = 700.0f;
+	fsm->t_prev = clock();
+	fsm->t_curr = fsm->t_prev;
+}
+
+void init_turning_fsm(turning_fsm *fsm) {
+	fsm->state = CENTER;
+	fsm->p_left = 0.0f;
+	fsm->p_right = 0.0f;
+}
+
 void rest() {
 	p_fsm.state = REST;
-	p_fsm.t_prev = clock()
+	p_fsm.t_prev = clock();
 	p_fsm.t_curr = p_fsm.t_prev;
 
 	p_update();
@@ -47,7 +62,7 @@ void p_update() {
 	// 	diff = UINT_MAX - diff;
 	// } 
 
-	p_fsm.p = p + diff * p_dot;
+	p_fsm.p = p_fsm.p + diff * p_fsm.p_dot;
 
 	if (p_fsm.p > p_fsm.p_max) {
 		p_fsm.p = p_fsm.p_max;

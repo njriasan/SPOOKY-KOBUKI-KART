@@ -19,6 +19,9 @@ typedef struct {
 	float p_right;
 } turning_fsm;
 
+void init_power_fsm(power_fsm *fsm);
+void init_turning_fsm(turning_fsm *fsm);
+
 void rest();
 void on_X_press();
 void on_X_release();
@@ -27,5 +30,8 @@ void on_l_stick_press();
 void on_r_stick_press();
 void on_stick_release();
 void drive();
+
+extern power_fsm p_fsm;
+extern turning_fsm t_fsm;
 
 #endif
