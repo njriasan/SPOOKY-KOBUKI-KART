@@ -64,7 +64,7 @@ simple_ble_app_t* simple_ble_app;
 // controls ordering: accelerate, decelerate, left, right
 
 typedef struct {
-  char* name;
+  const char* name;
   uint16_t mask;
   uint8_t shift_amount;
   uint8_t value;
@@ -86,29 +86,6 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
     //printf("%x\n", stick_push_button.value);
   	//printf("%x %x\n", bytes_look[0], bytes_look[1]);
   	//printf("\n\n");
-
-  // TODO: There's no rest state at the moment, we are just constantly decelerating but hitting th floor of 0
-  if (x_button.value == 1) {
-    // Acclerating
-    on_X_press();
-  } else if (p_fsm.state == REST) {
-    rest();
-  } else {
-    // Decelerate
-    on_X_release();
-  }
-
-  if (stick_push_button.value == 6) {
-    // Turning Left
-    on_l_stick_press();
-  } else if (stick_push_button.value == 2) {
-    // Turning right
-    on_r_stick_press();
-  } else {
-    // Go straight
-    on_stick_release();
-  }
-
 }
 
 void print_power_state(power_states current_state){
@@ -123,6 +100,10 @@ void print_power_state(power_states current_state){
 	    }
 	    case DECELERATE: {
 	      display_write("DECELERATE", DISPLAY_LINE_0);
+	      break;
+	    }
+	    case BRAKE: {
+	   	  display_write("BRAKE", DISPLAY_LINE_0);
 	      break;
 	    }
 	}
@@ -205,6 +186,7 @@ int main(void) {
   printf("Kobuki initialized!\n");
 
   // Initialize the fsms
+  timer_init();
   init_power_fsm(&p_fsm);
   init_turning_fsm(&t_fsm);
 
@@ -218,7 +200,14 @@ int main(void) {
 	    rest();
 	  } else {
 	    // Decelerate
-	    on_X_release();
+	    on_button_release();
+	  }
+
+	  if (b_button.value == 1) {
+	  	//braking
+	  	on_B_press();
+	  } else if (p_fsm.state == REST) {
+	    rest();
 	  }
 
 	  if (stick_push_button.value == 6) {
@@ -239,6 +228,7 @@ int main(void) {
   	/* May read sensors later. */
     // read sensors from robot
     //int status = kobukiSensorPoll(&sensors);
+    //nrf_delay_ms(100);
   }
 }
 

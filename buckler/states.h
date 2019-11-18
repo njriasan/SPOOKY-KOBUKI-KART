@@ -6,7 +6,8 @@
 typedef enum {
 	REST,
 	ACCELERATE,
-	DECELERATE
+	DECELERATE,
+	BRAKE
 } power_states;
 
 typedef enum {

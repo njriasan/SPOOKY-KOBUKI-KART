@@ -1,30 +1,33 @@
 #ifndef FSM_H
 #define FSM_H
 
-#include "time.h"
+#include <stdint.h>
 #include "states.h"
 
 typedef struct {
 	power_states state;
-	float p;
-	float p_dot;
-	float p_max;
-	clock_t t_curr;
-	clock_t t_prev;
+	double p;
+	double p_dot;
+	double p_max;
+	uint32_t t_curr;
+	uint32_t t_prev;
 } power_fsm;
 
 typedef struct {
 	turning_states state;
-	float p_left;
-	float p_right;
+	double p_left;
+	double p_right;
 } turning_fsm;
 
 void init_power_fsm(power_fsm *fsm);
 void init_turning_fsm(turning_fsm *fsm);
 
+void timer_init();
+
 void rest();
 void on_X_press();
-void on_X_release();
+void on_button_release();
+void on_B_press();
 void p_update();
 void on_l_stick_press();
 void on_r_stick_press();
