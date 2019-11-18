@@ -27,7 +27,7 @@
 const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
 
 // List of all MAC addresses for the bucklers (replace me later)
-const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
+const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:49:00:11", "c0:98:e5:49:00:11"};
 
 static connection_node_t *unprocessed_macs = NULL;
 static connection_node_t *processed_macs = NULL;
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
                             char *python_path = "python3";
                             char *args[5];
                             args[0] = python_path;
-                            args[1] = "../send_pkt.py";
+                            args[1] = "../rpi_ble/send_pkt.py";
                             args[2] = node->buckler_mac_addr;
                             args[3] = malloc (sizeof(char) * 6);
                             snprintf (args[3], 6, "%d\n", node->server_port);

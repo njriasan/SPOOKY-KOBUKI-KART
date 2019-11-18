@@ -12,8 +12,8 @@
 
 typedef enum {
     OFF,
-    FORWARD,
-    REVERSE,
+    ACCELERATE,
+    DECELERATE,
     LEFT,
     RIGHT,
 } states;

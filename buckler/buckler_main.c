@@ -29,6 +29,8 @@
 
 #include "states.h"
 
+#define NUM_BUTTONS 4
+
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -40,7 +42,7 @@ states state = OFF;
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
         // c0:98:e5:49:xx:xx
-        .platform_id       = 0x49,    // used as 4th octect in device BLE address
+        .platform_id       = 0x00,    // used as 4th octect in device BLE address
         .device_id         = 0x11, // TODO: replace with your lab bench number
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
@@ -54,33 +56,43 @@ static simple_ble_service_t robot_service = {{
                 0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x46}
 }};
 
-// TODO: Declare characteristics and variables for your service
-static simple_ble_char_t forward_state_char = {.uuid16 = 0xeda1};
-static bool forward = false;
-
-static simple_ble_char_t reverse_state_char = {.uuid16 = 0xeda2};
-static bool reverse = false;
-
-static simple_ble_char_t left_state_char = {.uuid16 = 0xeda3};
-static bool left = false;
-
-static simple_ble_char_t right_state_char = {.uuid16 = 0xeda4};
-static bool right = false;
+// TODO: Declare control characteristic and variable for our service
+static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
+static uint16_t controller_bytes;
 
 simple_ble_app_t* simple_ble_app;
 
+// controls ordering: accelerate, decelerate, left, right
+
+typedef struct {
+  char* name;
+  uint16_t mask;
+  uint8_t shift_amount;
+  uint8_t value;
+} button_info_t;
+
+static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
+static button_info_t b_button = {"B", 0b1, 0, 0};
+static button_info_t stick_push_button = {"STICK PUSH", 0xb1111 << 8, 8, 8};
+
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &stick_push_button };
+
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
-  if (forward == true) {
-    state = FORWARD;
-  } else if (reverse == true) {
-    state = REVERSE;
-  } else if (left == true) {
-    state = LEFT;
-  } else if (right == true) {
-    state = RIGHT;
-  } else {
-    state = OFF;
+  for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
+    buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
+  }
+
+  if (x_button.value == 1) {
+    if (stick_push_button.value == 6) {
+      state = LEFT;
+    } else if (stick_push_button.value == 2) {
+      state = RIGHT;
+    } else {
+      state = ACCELERATE;
+    }
+  } else if (b_button.value == 1) {
+    state = DECELERATE;
   }
 }
 
@@ -90,12 +102,12 @@ void print_state(states current_state){
   		display_write("OFF", DISPLAY_LINE_0);
   		break;
     }
-    case FORWARD: {
-      display_write("FORWARD", DISPLAY_LINE_0);
+    case ACCELERATE: {
+      display_write("ACCELERATE", DISPLAY_LINE_0);
       break;
     }
-    case REVERSE: {
-      display_write("REVERSE", DISPLAY_LINE_0);
+    case DECELERATE: {
+      display_write("DECELERATE", DISPLAY_LINE_0);
       break;
     }
     case LEFT: {
@@ -125,20 +137,8 @@ int main(void) {
 
   // TODO: Register your characteristics
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(forward), (uint8_t*)&forward,
-      &robot_service, &forward_state_char);
-
-  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(reverse), (uint8_t*)&reverse,
-      &robot_service, &reverse_state_char);
-
-  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(left), (uint8_t*)&left,
-      &robot_service, &left_state_char);
-
-  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(right), (uint8_t*)&right,
-      &robot_service, &right_state_char);
+      sizeof(controller_bytes), (uint8_t*)&controller_bytes,
+      &robot_service, &controller_char);
 
   // Start Advertising
   simple_ble_adv_only_name();
@@ -201,7 +201,7 @@ int main(void) {
         break; // each case needs to end with break!
       }
 
-      case FORWARD: {
+      case ACCELERATE: {
         print_state(state);
 
         if (is_button_pressed(&sensors)) {
@@ -213,7 +213,7 @@ int main(void) {
         break; // each case needs to end with break!
       }
 
-      case REVERSE: {
+      case DECELERATE: {
         print_state(state);
 
         if (is_button_pressed(&sensors)) {
@@ -232,7 +232,7 @@ int main(void) {
           state = OFF;
         } else {
           // perform state-specific actions here
-          kobukiDriveDirect(-100, 100);
+          kobukiDriveDirect(-50, 100);
         }
         break; // each case needs to end with break!
       }
@@ -244,7 +244,7 @@ int main(void) {
           state = OFF;
         } else {
           // perform state-specific actions here
-          kobukiDriveDirect(100, -100);
+          kobukiDriveDirect(100, -50);
         }
         break; // each case needs to end with break!
       }
