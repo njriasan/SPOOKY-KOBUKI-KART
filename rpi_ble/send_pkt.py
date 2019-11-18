@@ -18,10 +18,10 @@ server_port = args.server_port
 
 SERVICE_UUID = "4607eda0-f65e-4d59-a9ff-84420d87a4ca"
 CHAR_UUIDS = [
-    "4607eda1-f65e-4d59-a9ff-84420d87a4ca",
-    "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
-    "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
-    "4607eda4-f65e-4d59-a9ff-84420d87a4ca"
+    "4607eda1-f65e-4d59-a9ff-84420d87a4ca"
+    # "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
+    # "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
+    # "4607eda4-f65e-4d59-a9ff-84420d87a4ca"
     ] 
 
 class RobotController():
