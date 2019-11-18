@@ -30,6 +30,14 @@ class RobotController():
 
         print("connected")
                         
+
+        # Create a new Joycon
+        self.controller = JoyCon()
+        self.controller.display_all_pressed_buttons()
+
+        # robot refers to buckler, our peripheral
+        self.robot = Peripheral(addr)
+
         # get service from robot
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
 
@@ -41,13 +49,6 @@ class RobotController():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(('localhost', server_port))
 
-        # Create a new Joycon
-        controller = JoyCon()
-        controller.display_all_pressed_buttons()
-
-        # robot refers to buckler, our peripheral
-        self.robot = Peripheral(addr)
-
         while True:
             pkt = self.sock.recv(12)
             self.on_pkt_receive(pkt)
@@ -55,13 +56,13 @@ class RobotController():
     def on_pkt_receive(self, pkt):
         if (len(pkt) == 0):
             sys.exit (1)
-        controller.parse_next_state(pkt)
-        controller.display_all_pressed_buttons()
-        #for byte in controller.get_output_message():
+        self.controller.parse_next_state(pkt)
+        self.controller.display_all_pressed_buttons()
+        #for byte in self.controller.get_output_message():
         #    print ("{} ".format(hex(byte)), end="")
         #print()
         
-        self.controller_characteristic.write(controller.get_output_message())
+        self.controller_characteristic.write(self.controller.get_output_message())
 
     def __enter__(self):
         return self

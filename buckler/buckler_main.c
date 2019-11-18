@@ -42,7 +42,7 @@ states state = OFF;
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
         // c0:98:e5:49:xx:xx
-        .platform_id       = 0x49,    // used as 4th octect in device BLE address
+        .platform_id       = 0x00,    // used as 4th octect in device BLE address
         .device_id         = 0x11, // TODO: replace with your lab bench number
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
@@ -63,24 +63,35 @@ static uint16_t controller_bytes;
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
-static bool controls[NUM_BUTTONS] = {false, false, false, false};
-static uint16_t masks[NUM_BUTTONS] = {0b1, 0b1 << 3, 0b11 << 10, 0b1 << 11};
+
+typedef struct {
+  char* name;
+  uint16_t mask;
+  uint8_t shift_amount;
+  uint8_t value;
+} button_info_t;
+
+static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
+static button_info_t b_button = {"B", 0b1, 0, 0};
+static button_info_t stick_push_button = {"STICK PUSH", 0xb1111 << 8, 8, 8};
+
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &stick_push_button };
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
-    controls[i] = controller_bytes & masks[i];
+    buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
 
-  if (controls[0] == true) {
-    if (controls[2] == true) {
+  if (x_button.value == 1) {
+    if (stick_push_button.value == 6) {
       state = LEFT;
-    } else if (controls[3] == true) {
+    } else if (stick_push_button.value == 2) {
       state = RIGHT;
     } else {
       state = ACCELERATE;
     }
-  } else if (controls[1] == true) {
+  } else if (b_button.value == 1) {
     state = DECELERATE;
   }
 }
