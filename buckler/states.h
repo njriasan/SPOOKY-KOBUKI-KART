@@ -6,16 +6,18 @@
 typedef enum {
 	REST,
 	ACCELERATE,
-	DECELERATE,
-	BRAKE
+	REVERSE,
+	CRUISE
 } power_states;
 
 typedef enum {
 	CENTER,
 	LEFT,
 	LEFT_UP,
+	LEFT_DOWN,
 	RIGHT,
-	RIGHT_UP
+	RIGHT_UP,
+	RIGHT_DOWN
 } turning_states;
 
 #endif /* STATES_H_ */

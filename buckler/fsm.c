@@ -11,7 +11,6 @@
 #define SOFT_TURNING_RATE .55
 #define ACCELERATION 400
 #define BRAKING -800
-#define DECELERATION -200
 
 #define PRESCALE_VALUE 4
 #define BASE_CLOCK 16000000.0
@@ -59,6 +58,13 @@ void rest() {
 
 void on_X_press() {
   p_fsm.state = ACCELERATE;
+
+  if (p_fsm.p < 0) {
+    p_fsm.p_dot = -1 * BRAKING;
+  } else {
+    p_fsm.p_dot = ACCELERATION;
+  }
+
   p_fsm.p_dot = ACCELERATION;
   p_fsm.t_prev = p_fsm.t_curr;
   p_fsm.t_curr = read_timer();
@@ -67,8 +73,14 @@ void on_X_press() {
 }
 
 void on_B_press() {
-  p_fsm.state = BRAKE;
-  p_fsm.p_dot = BRAKING;
+  p_fsm.state = REVERSE;
+
+  if (p_fsm.p > 0) {
+    p_fsm.p_dot = BRAKING;
+  } else {
+    p_fsm.p_dot = -1 * ACCELERATION;
+  }
+
   p_fsm.t_prev = p_fsm.t_curr;
   p_fsm.t_curr = read_timer();
 
@@ -76,8 +88,8 @@ void on_B_press() {
 }
 
 void on_button_release() {
-  p_fsm.state = DECELERATE;
-  p_fsm.p_dot = DECELERATION;
+  p_fsm.state = CRUISE;
+  p_fsm.p_dot = p_fsm.p_dot / 2; // works for forwards and backwards
   p_fsm.t_prev = p_fsm.t_curr;
   p_fsm.t_curr = read_timer();
 
@@ -102,8 +114,7 @@ void p_update() {
 
   if (p_fsm.p > p_fsm.p_max) {
     p_fsm.p = p_fsm.p_max;
-  } else if (p_fsm.p < 0) {
-    // TODO: Implement moving backwards
+  } else if (p_fsm.p < 0 && p_fsm.state == CRUISE) {
     p_fsm.p = 0;
     p_fsm.state = REST;
   }
