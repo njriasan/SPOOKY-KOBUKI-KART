@@ -9,8 +9,8 @@
 
 #define HARD_TURNING_RATE .6
 #define SOFT_TURNING_RATE .55
-#define ACCELERATION 600
-#define BRAKING -1200
+#define ACCELERATION 800
+#define BRAKING -1400
 
 #define PRESCALE_VALUE 4
 #define BASE_CLOCK 16000000.0
@@ -38,7 +38,7 @@ void init_power_fsm(power_fsm *fsm) {
   fsm->state = REST;
   fsm->p = 0.0;
   fsm->p_dot = 0.0;
-  fsm->p_max = 800.0;
+  fsm->p_max = 1300.0;
   fsm->t_prev = read_timer();
   fsm->t_curr = fsm->t_prev;
 }
