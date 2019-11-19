@@ -122,8 +122,8 @@ void p_update() {
 
 void on_l_stick_press() {
   t_fsm.state = LEFT;
-  t_fsm.p_right = p_fsm.p * TURNING_RATE;
-  t_fsm.p_left = p_fsm.p * (1 - TURNING_RATE);
+  t_fsm.p_right = p_fsm.p * HARD_TURNING_RATE;
+  t_fsm.p_left = p_fsm.p * (1 - HARD_TURNING_RATE);
 }
 
 void on_l_up_stick_press() {
@@ -134,8 +134,8 @@ void on_l_up_stick_press() {
 
 void on_r_stick_press() {
   t_fsm.state = RIGHT;
-  t_fsm.p_left = p_fsm.p * TURNING_RATE;
-  t_fsm.p_right = p_fsm.p * (1 - TURNING_RATE);
+  t_fsm.p_left = p_fsm.p * HARD_TURNING_RATE;
+  t_fsm.p_right = p_fsm.p * (1 - HARD_TURNING_RATE);
 }
 
 void on_r_up_stick_press() {
