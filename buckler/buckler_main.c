@@ -98,12 +98,12 @@ void print_power_state(power_states current_state){
 	      display_write("ACCELERATE", DISPLAY_LINE_0);
 	      break;
 	    }
-	    case DECELERATE: {
-	      display_write("DECELERATE", DISPLAY_LINE_0);
+	    case REVERSE: {
+	      display_write("REVERSE", DISPLAY_LINE_0);
 	      break;
 	    }
-	    case BRAKE: {
-	   	  display_write("BRAKE", DISPLAY_LINE_0);
+	    case CRUISE: {
+	   	  display_write("CRUISE", DISPLAY_LINE_0);
 	      break;
 	    }
 	}
@@ -123,6 +123,14 @@ void print_turning_state(turning_states current_state){
 	      display_write("RIGHT", DISPLAY_LINE_1);
 	      break;
 	    }
+      case LEFT_UP: {
+        display_write("LEFT_UP", DISPLAY_LINE_1);
+        break;
+      }
+      case RIGHT_UP: {
+        display_write("RIGHT_UP", DISPLAY_LINE_1);
+        break;
+      }
 	}
 }
 
