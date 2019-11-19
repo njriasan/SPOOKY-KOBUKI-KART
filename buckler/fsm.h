@@ -26,11 +26,13 @@ void timer_init();
 
 void rest();
 void on_X_press();
-void on_button_release();
 void on_B_press();
+void on_button_release();
 void p_update();
 void on_l_stick_press();
+void on_l_up_stick_press();
 void on_r_stick_press();
+void on_r_up_stick_press();
 void on_stick_release();
 void drive();
 

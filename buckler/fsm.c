@@ -7,7 +7,11 @@
 #include "limits.h"
 #include "nrf.h"
 
-#define TURNING_RATE .6
+#define HARD_TURNING_RATE .6
+#define SOFT_TURNING_RATE .55
+#define ACCELERATION 400
+#define BRAKING -800
+#define DECELERATION -200
 
 #define PRESCALE_VALUE 4
 #define BASE_CLOCK 16000000.0
@@ -55,16 +59,7 @@ void rest() {
 
 void on_X_press() {
   p_fsm.state = ACCELERATE;
-  p_fsm.p_dot = 400;
-  p_fsm.t_prev = p_fsm.t_curr;
-  p_fsm.t_curr = read_timer();
-
-  p_update();
-}
-
-void on_button_release() {
-  p_fsm.state = DECELERATE;
-  p_fsm.p_dot = -200;
+  p_fsm.p_dot = ACCELERATION;
   p_fsm.t_prev = p_fsm.t_curr;
   p_fsm.t_curr = read_timer();
 
@@ -73,7 +68,16 @@ void on_button_release() {
 
 void on_B_press() {
   p_fsm.state = BRAKE;
-  p_fsm.p_dot = -400;
+  p_fsm.p_dot = BRAKING;
+  p_fsm.t_prev = p_fsm.t_curr;
+  p_fsm.t_curr = read_timer();
+
+  p_update();
+}
+
+void on_button_release() {
+  p_fsm.state = DECELERATE;
+  p_fsm.p_dot = DECELERATION;
   p_fsm.t_prev = p_fsm.t_curr;
   p_fsm.t_curr = read_timer();
 
@@ -91,11 +95,6 @@ void p_update() {
   }
   double diff = (change) / (BASE_CLOCK / (1 << PRESCALE_VALUE));
   printf("%lf\n", diff);
-
-  // Handles overflow
-  // if ((p_fsm.t_curr - p_fsm.t_prev) < 0) {
-  //  diff = UINT_MAX - diff;
-  // } 
 
   p_fsm.p = p_fsm.p + diff * p_fsm.p_dot;
   printf("%lf\n\n\n\n", p_fsm.p);
@@ -116,10 +115,22 @@ void on_l_stick_press() {
   t_fsm.p_left = p_fsm.p * (1 - TURNING_RATE);
 }
 
+void on_l_up_stick_press() {
+  t_fsm.state = LEFT_UP;
+  t_fsm.p_right = p_fsm.p * SOFT_TURNING_RATE;
+  t_fsm.p_left = p_fsm.p * (1 - SOFT_TURNING_RATE);
+}
+
 void on_r_stick_press() {
   t_fsm.state = RIGHT;
   t_fsm.p_left = p_fsm.p * TURNING_RATE;
   t_fsm.p_right = p_fsm.p * (1 - TURNING_RATE);
+}
+
+void on_r_up_stick_press() {
+  t_fsm.state = RIGHT_UP;
+  t_fsm.p_left = p_fsm.p * SOFT_TURNING_RATE;
+  t_fsm.p_right = p_fsm.p * (1 - SOFT_TURNING_RATE);
 }
 
 void on_stick_release() {
