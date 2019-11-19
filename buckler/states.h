@@ -13,7 +13,9 @@ typedef enum {
 typedef enum {
 	CENTER,
 	LEFT,
-	RIGHT
+	LEFT_UP,
+	RIGHT,
+	RIGHT_UP
 } turning_states;
 
 #endif /* STATES_H_ */
