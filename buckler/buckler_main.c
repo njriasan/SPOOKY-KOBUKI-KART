@@ -196,12 +196,12 @@ int main(void) {
 	    // Acclerating
 	    on_X_press();
 	  } else if (b_button.value == 1) {
-      //braking
+      // Braking/reversing
       on_B_press();
     } else if (p_fsm.state == REST) {
 	    rest();
 	  } else {
-	    // Decelerate
+	    // Cruising
 	    on_button_release();
 	  }
 
@@ -210,13 +210,19 @@ int main(void) {
 	    on_l_stick_press();
 	  } else if (stick_push_button.value == 2) {
 	    // Turning right
-	    on_r_up_stick_press();
+	    on_r_stick_press();
 	  } else if (stick_push_button.value == 7) {
       // Turning left diagonal
       on_l_up_stick_press();
     } else if (stick_push_button.value == 1) {
       // Turning right diagonal
       on_r_up_stick_press();
+    } else if (stick_push_button.value == 5) {
+      // Turning "right" backwards
+      on_r_stick_press();
+    } else if (stick_push_button.value == 3) {
+      // Turning "left" backwards
+      on_l_stick_press();
     } else {
 	    // Go straight
 	    on_stick_release();
