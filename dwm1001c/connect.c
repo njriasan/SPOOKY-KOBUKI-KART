@@ -7,6 +7,7 @@
 #include "nrf_twi_mngr.h"
 #include "nrf_gpio.h"
 #include "dwm_driver.h"
+#include "nrf_delay.h"
 
 #include "buckler.h"
 
@@ -33,14 +34,10 @@ int main(void) {
   ret_code_t error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
   printf("Error Check done.\n");
-  uint8_t* readData = dwm_init(&spi_instance);
-  //if (readData == NULL) {
-  //  printf("ERROR!\n");
- // } else {
-    //printf("%x%x%x\n", readData[0], readData[1], readData[2]);
-  //}  
+  uint8_t* readData = dwm_tag_init(&spi_instance);
   readData = dwm_read_rate(&spi_instance);
   while(1) {
-    power_manage();
+    dwm_read_pos(&spi_instance);
+    nrf_delay_ms(1000);
   }
 }
