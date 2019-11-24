@@ -12,8 +12,6 @@
 #include "nrf_serial.h"
 
 #include "buckler.h"
-#include "gpio.h"
-
 
 #include "app_pwm.h" //Add pwm header file
 
