@@ -28,10 +28,10 @@ void pwm_ready_callback(uint32_t pwm_id) {
 int main(void) {
 
     /* Configure pwm channel period and pin number */
-	app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH (5L, 5); 
+	app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH (5000L, 27); 
 
     /* Switch the polarity of the second channel. */
-    pwm1_cfg.pin_polarity[1] = APP_PWM_POLARITY_ACTIVE_HIGH;
+    pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
     /* Initialize and enable PWM. */
     ret_code_t err_code;
