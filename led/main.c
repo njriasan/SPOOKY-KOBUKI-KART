@@ -1,51 +1,65 @@
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include <stdio.h>
+#include <stdint.h>
+#include <stdio.h>
 
-// #include "app_error.h"
-// #include "nrf.h"
-// #include "nrf_delay.h"
-// #include "nrf_log.h"
-// #include "nrf_log_ctrl.h"
-// #include "nrf_log_default_backends.h"
-// #include "nrf_pwr_mgmt.h"
-// #include "nrf_serial.h"
+#include "nrf_drv_pwm.h"
+#include "app_util_platform.h"
+#include "app_error.h"
+#include "nrf_drv_clock.h"
+#include "nrf_delay.h"
 
-// #include "buckler.h"
 
-// #include "app_pwm.h" //Add pwm header file
+#define PWM_PIN 27
 
-// APP_PWM_INSTANCE(PWM1,1);  // Create the instance "PWM1" using TIMER1
+/* Define a pwm instance */
+static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
 
-// static volatile bool ready_flag; // A flag indicating PWM status.
+static void pwm_init() {
+    uint32_t err_code;
 
-// // PWM callback function
-// void pwm_ready_callback(uint32_t pwm_id) {   
-//     ready_flag = true;
-//     printf("%s\n", "pwm in ready state");
-// }
+    /* Configure a pwm instance */
+    nrf_drv_pwm_config_t const config0 = {
+        .output_pins =
+        {
+            PWM_PIN,                              
+            NRF_DRV_PWM_PIN_NOT_USED,             
+            NRF_DRV_PWM_PIN_NOT_USED,             
+            NRF_DRV_PWM_PIN_NOT_USED,             
+        },
+        .irq_priority = APP_IRQ_PRIORITY_LOW,
+        .base_clock   = NRF_PWM_CLK_1MHz,
+        .count_mode   = NRF_PWM_MODE_UP,
+        .top_value    = 100, // pwm_period = (1 / base_clock) * top_value
+        .load_mode    = NRF_PWM_LOAD_COMMON,
+        .step_mode    = NRF_PWM_STEP_AUTO
+    };
 
-// int main(void) {
+    /* Initialize the pwm instance */
+    err_code = nrf_drv_pwm_init(&m_pwm0, &config0, NULL);
+    if (err_code != NRF_SUCCESS) {
+        printf("%s\n", "Failed inializing pwm instance");
+    }
+}
 
-//     /* Configure pwm channel period and pin number */
-//     app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000.0, 27); 
+void pwm_start() {
 
-//     /* Switch the polarity of the second channel. */
-//     pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
+    /* Define PWM duty cycle sequence */
+    static nrf_pwm_values_common_t seq_values[] = {
+        20, 40, 80
+    };
 
-//     /* Initialize and enable PWM. */
-//     ret_code_t err_code;
-//     err_code = app_pwm_init(&PWM1, &pwm1_cfg, pwm_ready_callback); 
-//     APP_ERROR_CHECK(err_code);
-    
-//     app_pwm_enable(&PWM1); // Enable pwm
-//     printf("%s\n", "Done enabling pwm");
+    /* Define duty cycle sequence*/
+    nrf_pwm_sequence_t const seq = {
+        .values.p_individual = seq_values,
+        .length          = NRF_PWM_VALUES_LENGTH(seq_values),
+        .repeats         = 0,
+        .end_delay       = 0
+    };
 
-//     /* Set pwm duty cycle */
-//     app_pwm_channel_duty_set(&PWM1, 0, 80);
-    
+    /* Play the PWM sequence on an intialized pwm instance*/
+    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
+}
 
-//     while (true) {
-
-//     }
-// }
+int main(void) {
+    pwm_init();
+    pwm_start();
+}
