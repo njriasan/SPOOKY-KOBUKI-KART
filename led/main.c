@@ -8,7 +8,7 @@
 #include "nrf_delay.h"
 
 
-#define PWM_PIN 27
+#define PWM_PIN 26
 
 /* Define a pwm instance */
 static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
@@ -40,12 +40,10 @@ static void pwm_init() {
     }
 }
 
-void pwm_start() {
+void pwm_start(uint32_t num_leds) {
 
     /* Define PWM duty cycle sequence */
     static nrf_pwm_values_common_t seq_values[] = {
-        // 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 65, 65, 65, 65, 65, 65, 65, 65,
-        // 100, 100, 100, 100, 100, 100, 100, 100, 100
         6, 6, 6, 6, 6, 6, 6, 6,
         14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
         100, 100
@@ -61,10 +59,11 @@ void pwm_start() {
 
     /* Play the PWM sequence on an intialized pwm instance*/
     // nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
-    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, 0); // play once
+    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, num_leds, 0); // play once each led
 }
 
 int main(void) {
+    uint32_t num_leds = 7;
     pwm_init();
-    pwm_start();
+    pwm_start(num_leds);
 }
