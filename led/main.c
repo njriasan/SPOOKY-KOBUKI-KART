@@ -26,9 +26,9 @@ static void pwm_init() {
             NRF_DRV_PWM_PIN_NOT_USED,             
         },
         .irq_priority = APP_IRQ_PRIORITY_LOW,
-        .base_clock   = NRF_PWM_CLK_1MHz,
+        .base_clock   = NRF_PWM_CLK_16MHz,
         .count_mode   = NRF_PWM_MODE_UP,
-        .top_value    = 100, // pwm_period = (1 / base_clock) * top_value
+        .top_value    = 20, // pwm_period = (1 / base_clock) * top_value
         .load_mode    = NRF_PWM_LOAD_COMMON,
         .step_mode    = NRF_PWM_STEP_AUTO
     };
@@ -44,7 +44,11 @@ void pwm_start() {
 
     /* Define PWM duty cycle sequence */
     static nrf_pwm_values_common_t seq_values[] = {
-        20, 40, 80
+        // 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 74, 65, 65, 65, 65, 65, 65, 65, 65,
+        // 100, 100, 100, 100, 100, 100, 100, 100, 100
+        6, 6, 6, 6, 6, 6, 6, 6,
+        14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+        100, 100
     };
 
     /* Define duty cycle sequence*/
@@ -56,7 +60,8 @@ void pwm_start() {
     };
 
     /* Play the PWM sequence on an intialized pwm instance*/
-    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
+    // nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
+    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, 0); // play once
 }
 
 int main(void) {
