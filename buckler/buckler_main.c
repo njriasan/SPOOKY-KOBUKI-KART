@@ -29,6 +29,7 @@
 
 #include "states.h"
 #include "fsm.h"
+#include "powerups.h"
 
 #define NUM_BUTTONS 4
 
@@ -72,9 +73,10 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
+static button_info_t plus_button = {"+", 0b1 << 12, 12, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &stick_push_button };
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &plus_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
@@ -106,6 +108,18 @@ void print_power_state(power_states current_state){
 	   	  display_write("CRUISE", DISPLAY_LINE_0);
 	      break;
 	    }
+      case MUSHROOM: {
+        display_write("MUSHROOM", DISPLAY_LINE_0);
+        break;
+      }
+      case MUSHROOM_DECAY: {
+        display_write("MUSHROOM_DECAY", DISPLAY_LINE_0);
+        break;
+      }
+      case EXIT_POWERUP: {
+        display_write("EXIT_POWERUP", DISPLAY_LINE_0);
+        break;
+      }
 	}
 }
 
@@ -200,7 +214,13 @@ int main(void) {
 
   // loop forever, running state machine
   while (1) {
-	  if (x_button.value == 1) {
+    if (plus_button.value == 1 && powerup_counter == 0) {
+      apply_mushroom(&p_fsm);
+    } else if (powerup_counter > 0) {
+      powerup_counter--;
+    } else if (p_fsm.state == MUSHROOM_DECAY) {
+      decay_mushroom(&p_fsm);
+    } else if (x_button.value == 1) {
 	    // Acclerating
 	    on_X_press();
 	  } else if (b_button.value == 1) {

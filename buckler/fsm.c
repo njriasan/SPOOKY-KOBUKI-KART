@@ -18,9 +18,8 @@
 power_fsm p_fsm;
 turning_fsm t_fsm;
 
-static uint32_t read_timer();
 
-static uint32_t read_timer() {
+uint32_t read_timer() {
   NRF_TIMER4->TASKS_CAPTURE[1] = 0x1;
   return NRF_TIMER4->CC[1];
 }
@@ -38,7 +37,7 @@ void init_power_fsm(power_fsm *fsm) {
   fsm->state = REST;
   fsm->p = 0.0;
   fsm->p_dot = 0.0;
-  fsm->p_max = 1300.0;
+  fsm->p_max = BASE_VELOCITY_MAX;
   fsm->t_prev = read_timer();
   fsm->t_curr = fsm->t_prev;
 }

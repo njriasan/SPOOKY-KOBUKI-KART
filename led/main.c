@@ -16,5 +16,6 @@ int main(void) {
 		nrf_delay_ms(1000);
 		light_red(&m_pwm0);
 		nrf_delay_ms(1000);
+		// clear_lights0);
 	}
 }

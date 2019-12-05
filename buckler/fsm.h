@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "states.h"
 
+#define BASE_VELOCITY_MAX 1300.0
+
+
 typedef struct {
 	power_states state;
 	double p;
@@ -23,6 +26,7 @@ void init_power_fsm(power_fsm *fsm);
 void init_turning_fsm(turning_fsm *fsm);
 
 void timer_init();
+uint32_t read_timer();
 
 void rest();
 void on_X_press();

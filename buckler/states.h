@@ -7,7 +7,10 @@ typedef enum {
 	REST,
 	ACCELERATE,
 	REVERSE,
-	CRUISE
+	CRUISE,
+	MUSHROOM,
+	MUSHROOM_DECAY,
+	EXIT_POWERUP
 } power_states;
 
 typedef enum {
