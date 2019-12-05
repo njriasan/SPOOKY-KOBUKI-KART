@@ -24,7 +24,7 @@
 #define SECOND_TO_MICROSECONDS 1000000
 
 // List of all the mac addresses for possible joy con pairings
-const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"04:03:d6:7b:59:ca", "04:03:d6:7a:b8:75"};
+const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"7c:bb:8a:9e:3e:8d", "98:b6:e9:71:62:01"};
 
 // List of all MAC addresses for the bucklers (replace me later)
 const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:00:00:11", "c0:98:e5:00:00:12"};

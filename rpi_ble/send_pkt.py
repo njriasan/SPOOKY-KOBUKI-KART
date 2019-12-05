@@ -42,7 +42,7 @@ class RobotController():
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
 
         # get characteristic from robot
-        self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
+        self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive

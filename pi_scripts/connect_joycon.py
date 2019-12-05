@@ -2,7 +2,7 @@ from time import sleep
 import subprocess
 import tempfile
 
-joycon_macs = ["04:03:D6:7B:59:CA", "04:03:D6:7A:B8:75"]
+joycon_macs = ["7C:BB:8A:9E:3E:8D", "98:B6:E9:71:62:01"]
 
 
 
