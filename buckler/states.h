@@ -11,7 +11,7 @@ typedef enum {
 	MUSHROOM,
 	MUSHROOM_DECAY,
 	EXIT_POWERUP
-} power_states;
+} velocity_states;
 
 typedef enum {
 	CENTER,
@@ -20,7 +20,8 @@ typedef enum {
 	LEFT_DOWN,
 	RIGHT,
 	RIGHT_UP,
-	RIGHT_DOWN
+	RIGHT_DOWN,
+	BANANA
 } turning_states;
 
 #endif /* STATES_H_ */

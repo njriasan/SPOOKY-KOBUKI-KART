@@ -15,7 +15,7 @@
 #define PRESCALE_VALUE 4
 #define BASE_CLOCK 16000000.0
 
-power_fsm p_fsm;
+velocity_fsm v_fsm;
 turning_fsm t_fsm;
 
 
@@ -33,130 +33,128 @@ void timer_init(void) {
   NRF_TIMER4->TASKS_START = 0x1;
 }
 
-void init_power_fsm(power_fsm *fsm) {
+void init_velocity_fsm(velocity_fsm *fsm) {
   fsm->state = REST;
-  fsm->p = 0.0;
-  fsm->p_dot = 0.0;
-  fsm->p_max = BASE_VELOCITY_MAX;
+  fsm->v = 0.0;
+  fsm->v_dot = 0.0;
+  fsm->v_max = BASE_VELOCITY_MAX;
   fsm->t_prev = read_timer();
   fsm->t_curr = fsm->t_prev;
 }
 
 void init_turning_fsm(turning_fsm *fsm) {
   fsm->state = CENTER;
-  fsm->p_left = 0.0;
-  fsm->p_right = 0.0;
+  fsm->v_left = 0.0;
+  fsm->v_right = 0.0;
 }
 
 void rest() {
-  p_fsm.state = REST;
-  p_fsm.t_prev = p_fsm.t_curr;
-  p_fsm.t_curr = read_timer();
-  p_update();
+  v_fsm.state = REST;
+  v_fsm.t_prev = v_fsm.t_curr;
+  v_fsm.t_curr = read_timer();
+  v_update();
 }
 
 void on_X_press() {
-  p_fsm.state = ACCELERATE;
+  v_fsm.state = ACCELERATE;
 
-  if (p_fsm.p < 0) {
-    p_fsm.p_dot = -1 * BRAKING;
+  if (v_fsm.v < 0) {
+    v_fsm.v_dot = -1 * BRAKING;
   } else {
-    p_fsm.p_dot = ACCELERATION;
+    v_fsm.v_dot = ACCELERATION;
   }
 
-  p_fsm.t_prev = p_fsm.t_curr;
-  p_fsm.t_curr = read_timer();
+  v_fsm.t_prev = v_fsm.t_curr;
+  v_fsm.t_curr = read_timer();
 
-  p_update();
+  v_update();
 }
 
 void on_B_press() {
-  p_fsm.state = REVERSE;
+  v_fsm.state = REVERSE;
 
-  if (p_fsm.p > 0) {
-    p_fsm.p_dot = BRAKING;
+  if (v_fsm.v > 0) {
+    v_fsm.v_dot = BRAKING;
   } else {
-    p_fsm.p_dot = -1 * ACCELERATION;
+    v_fsm.v_dot = -1 * ACCELERATION;
   }
 
-  p_fsm.t_prev = p_fsm.t_curr;
-  p_fsm.t_curr = read_timer();
+  v_fsm.t_prev = v_fsm.t_curr;
+  v_fsm.t_curr = read_timer();
 
-  p_update();
+  v_update();
 }
 
 void on_button_release() {
-  if (p_fsm.p > 0) {
-    p_fsm.p_dot = -ACCELERATION / 2;
+  if (v_fsm.v > 0) {
+    v_fsm.v_dot = -ACCELERATION / 2;
   } else {
-    p_fsm.p_dot = ACCELERATION / 2;
+    v_fsm.v_dot = ACCELERATION / 2;
   }
-  p_fsm.state = CRUISE;
-  p_fsm.t_prev = p_fsm.t_curr;
-  p_fsm.t_curr = read_timer();
+  v_fsm.state = CRUISE;
+  v_fsm.t_prev = v_fsm.t_curr;
+  v_fsm.t_curr = read_timer();
 
-  p_update();
+  v_update();
 }
 
-void p_update() {
+void v_update() {
 
   double change = 0.0;
-  if (p_fsm.t_curr < p_fsm.t_prev) {
-    uint32_t rescaled_curr = UINT32_MAX - p_fsm.t_curr;
-    change = (double) (rescaled_curr + 1 + p_fsm.t_prev);
+  if (v_fsm.t_curr < v_fsm.t_prev) {
+    uint32_t rescaled_curr = UINT32_MAX - v_fsm.t_curr;
+    change = (double) (rescaled_curr + 1 + v_fsm.t_prev);
   } else {
-    change = (double) (p_fsm.t_curr - p_fsm.t_prev);
+    change = (double) (v_fsm.t_curr - v_fsm.t_prev);
   }
   double diff = (change) / (BASE_CLOCK / (1 << PRESCALE_VALUE));
-  printf("%lf\n", diff);
 
-  p_fsm.p = p_fsm.p + diff * p_fsm.p_dot;
-  printf("%lf\n\n\n\n", p_fsm.p);
+  v_fsm.v = v_fsm.v + diff * v_fsm.v_dot;
 
 
-  if (p_fsm.p >= p_fsm.p_max) {
-    p_fsm.p = p_fsm.p_max;
-  } else if (p_fsm.p <= -p_fsm.p_max) {
-    p_fsm.p = -p_fsm.p_max;
-  } else if ((p_fsm.p < 10 && p_fsm.p > -10) && p_fsm.state == CRUISE) {
-    p_fsm.p_dot = 0;
-    p_fsm.p = 0;
-    p_fsm.state = REST;
+  if (v_fsm.v >= v_fsm.v_max) {
+    v_fsm.v = v_fsm.v_max;
+  } else if (v_fsm.v <= -v_fsm.v_max) {
+    v_fsm.v = -v_fsm.v_max;
+  } else if ((v_fsm.v < 10 && v_fsm.v > -10) && v_fsm.state == CRUISE) {
+    v_fsm.v_dot = 0;
+    v_fsm.v = 0;
+    v_fsm.state = REST;
   }
 }
 
 void on_l_stick_press() {
   t_fsm.state = LEFT;
-  t_fsm.p_right = p_fsm.p * HARD_TURNING_RATE;
-  t_fsm.p_left = p_fsm.p * (1 - HARD_TURNING_RATE);
+  t_fsm.v_right = v_fsm.v * HARD_TURNING_RATE;
+  t_fsm.v_left = v_fsm.v * (1 - HARD_TURNING_RATE);
 }
 
 void on_l_up_stick_press() {
   t_fsm.state = LEFT_UP;
-  t_fsm.p_right = p_fsm.p * SOFT_TURNING_RATE;
-  t_fsm.p_left = p_fsm.p * (1 - SOFT_TURNING_RATE);
+  t_fsm.v_right = v_fsm.v * SOFT_TURNING_RATE;
+  t_fsm.v_left = v_fsm.v * (1 - SOFT_TURNING_RATE);
 }
 
 void on_r_stick_press() {
   t_fsm.state = RIGHT;
-  t_fsm.p_left = p_fsm.p * HARD_TURNING_RATE;
-  t_fsm.p_right = p_fsm.p * (1 - HARD_TURNING_RATE);
+  t_fsm.v_left = v_fsm.v * HARD_TURNING_RATE;
+  t_fsm.v_right = v_fsm.v * (1 - HARD_TURNING_RATE);
 }
 
 void on_r_up_stick_press() {
   t_fsm.state = RIGHT_UP;
-  t_fsm.p_left = p_fsm.p * SOFT_TURNING_RATE;
-  t_fsm.p_right = p_fsm.p * (1 - SOFT_TURNING_RATE);
+  t_fsm.v_left = v_fsm.v * SOFT_TURNING_RATE;
+  t_fsm.v_right = v_fsm.v * (1 - SOFT_TURNING_RATE);
 }
 
 void on_stick_release() {
   t_fsm.state = CENTER;
-  t_fsm.p_left = p_fsm.p / 2.0;
-  t_fsm.p_right = p_fsm.p / 2.0;
+  t_fsm.v_left = v_fsm.v / 2.0;
+  t_fsm.v_right = v_fsm.v / 2.0;
 }
 
 void drive() {
-  kobukiDriveDirect(t_fsm.p_left, t_fsm.p_right);
+  kobukiDriveDirect(t_fsm.v_left, t_fsm.v_right);
 }
 
 

@@ -31,7 +31,7 @@
 #include "fsm.h"
 #include "powerups.h"
 
-#define NUM_BUTTONS 4
+#define NUM_BUTTONS 5
 
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
@@ -53,7 +53,7 @@ static simple_ble_config_t ble_config = {
 //4607eda0-f65e-4d59-a9ff-84420d87a4ca
 static simple_ble_service_t robot_service = {{
     .uuid128 = {0xca,0xa4,0x87,0x0d,0x42,0x84,0xff,0xA9,
-                0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x46}
+                0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x56}
 }};
 
 // TODO: Declare control characteristic and variable for our service
@@ -73,10 +73,11 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t plus_button = {"+", 0b1 << 12, 12, 0};
+static button_info_t r_button = {"r", 0b1 << 5, 5, 0};
+static button_info_t rz_button = {"rz", 0b1 << 4, 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &plus_button, &stick_push_button};
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &r_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
     // TODO: logic for each characteristic and related state changes
@@ -84,13 +85,13 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
-    //uint8_t *bytes_look = (uint8_t *) &controller_bytes;
-    //printf("%x\n", stick_push_button.value);
-  	//printf("%x %x\n", bytes_look[0], bytes_look[1]);
-  	//printf("\n\n");
+    uint8_t *bytes_look = (uint8_t *) &controller_bytes;
+  	printf("%x %x\n", bytes_look[0], bytes_look[1]);
+  	printf("\n\n");
+    printf("%x\n", rz_button.value);
 }
 
-void print_power_state(power_states current_state){
+void print_velocity_state(velocity_states current_state){
 	switch(current_state){
 	  	case REST: {
 	  		display_write("OFF", DISPLAY_LINE_0);
@@ -143,6 +144,10 @@ void print_turning_state(turning_states current_state){
       }
       case RIGHT_UP: {
         display_write("RIGHT_UP", DISPLAY_LINE_1);
+        break;
+      }
+      case BANANA: {
+        display_write("BANANA", DISPLAY_LINE_1);
         break;
       }
 	}
@@ -209,31 +214,38 @@ int main(void) {
 
   // Initialize the fsms
   timer_init();
-  init_power_fsm(&p_fsm);
+  init_velocity_fsm(&v_fsm);
   init_turning_fsm(&t_fsm);
 
   // loop forever, running state machine
   while (1) {
-    if (plus_button.value == 1 && powerup_counter == 0) {
-      apply_mushroom(&p_fsm);
-    } else if (powerup_counter > 0) {
+    if (powerup_counter > 0) {
       powerup_counter--;
-    } else if (p_fsm.state == MUSHROOM_DECAY) {
-      decay_mushroom(&p_fsm);
+    } else if (r_button.value == 1 && powerup_counter == 0) {
+      apply_mushroom();
+    } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
+      decay_mushroom();
     } else if (x_button.value == 1) {
 	    // Acclerating
 	    on_X_press();
 	  } else if (b_button.value == 1) {
       // Braking/reversing
       on_B_press();
-    } else if (p_fsm.state == REST) {
+    } else if (v_fsm.state == REST) {
 	    rest();
 	  } else {
 	    // Cruising
 	    on_button_release();
 	  }
 
-	  if (stick_push_button.value == 6) {
+    if (banana_counter > 0) {
+      banana_counter--;
+    } else if (rz_button.value == 1) {
+      printf("%s\n", "enters BANANA");
+      apply_banana();
+    } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
+      decay_banana();
+    } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();
 	  } else if (stick_push_button.value == 2) {
@@ -258,7 +270,7 @@ int main(void) {
   	// Drive the kobuki
   	drive();
 
-  	print_power_state(p_fsm.state);
+  	print_velocity_state(v_fsm.state);
   	print_turning_state(t_fsm.state);
   	/* May read sensors later. */
     // read sensors from robot
