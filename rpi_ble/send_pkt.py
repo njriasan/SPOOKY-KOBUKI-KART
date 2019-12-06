@@ -19,8 +19,8 @@ server_port = args.server_port
 SERVICE_UUID = "5607eda0-f65e-4d59-a9ff-84420d87a4ca"
 CHAR_UUIDS = [
     "5607eda1-f65e-4d59-a9ff-84420d87a4ca",
-    # "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
-    # "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
+    "4607eda2-f65e-4d59-a9ff-84420d87a4ca",
+    "4607eda3-f65e-4d59-a9ff-84420d87a4ca",
     # "4607eda4-f65e-4d59-a9ff-84420d87a4ca"
     ] 
 
@@ -41,8 +41,15 @@ class RobotController():
         # get service from robot
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
 
-        # get characteristic from robot
+        # get controller characteristic from robot
         self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
+	
+	# get powerup characteristic from robot
+        self.powerup_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
+
+	# get hazard characteristic from robot
+        self.hazard_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
+	
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
