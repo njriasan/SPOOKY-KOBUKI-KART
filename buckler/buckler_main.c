@@ -59,6 +59,14 @@ static simple_ble_service_t robot_service = {{
 static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
 static uint16_t controller_bytes;
 
+// Characteristic defined to communicate a powerup value
+static simple_ble_char_t powerup_char = {.uuid16 = 0xeda12};
+static uint8_t powerup_byte;
+
+// Characteristic defined to communicate a hazard value
+static simple_ble_char_t hazard_char = {.uuid16 = 0xeda13};
+static uint8_t hazard_byte;
+
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
@@ -152,6 +160,16 @@ int main(void) {
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
       sizeof(controller_bytes), (uint8_t*)&controller_bytes,
       &robot_service, &controller_char);
+
+  // Advertise the powerup characteristic
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(powerup_byte), &powerup_byte,
+      &robot_service, &powerup_char);
+
+  // Advertise the hazard characteristic
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(hazard_byte), &hazard_byte,
+      &robot_service, &hazard_char);
 
   // Start Advertising
   simple_ble_adv_only_name();
