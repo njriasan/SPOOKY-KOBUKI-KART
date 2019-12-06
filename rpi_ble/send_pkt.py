@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import struct
+import threading
 import time
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
@@ -21,7 +22,19 @@ CHAR_UUIDS = [
     "5607eda1-f65e-4d59-a9ff-84420d87a4ca",
     "5607eda2-f65e-4d59-a9ff-84420d87a4ca",
     "5607eda3-f65e-4d59-a9ff-84420d87a4ca",
+    "5607eda4-f65e-4d59-a9ff-84420d87a4ca",
     ] 
+
+class RobotDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+    
+    def handleNotification(self, cHandle, data):
+        print("Called")
+        x_coor = int.from_bytes(data[0:4], "little", signed=True) / 1000.0
+        y_coor = int.from_bytes(data[4:8], "little", signed=True) / 1000.0
+        z_coor = int.from_bytes(data[8:12], "little", signed=True) / 1000.0
+        print ("Coordinates are: {} {} {}".format(x_coor, y_coor, z_coor))
 
 class RobotController():
 
@@ -36,6 +49,7 @@ class RobotController():
 
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
+        self.robot.withDelegate(RobotDelegate())
 
         # get service from robot
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
@@ -49,6 +63,12 @@ class RobotController():
 	# get hazard characteristic from robot
         self.hazard_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
 
+        # get location updates from robot
+        self.location_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
+
+        # location_thread = threading.Thread(target=self.receive_robot_notifications)
+        # location_thread.start()
+
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,6 +77,7 @@ class RobotController():
         while True:
             pkt = self.sock.recv(12)
             self.on_pkt_receive(pkt)
+            self.receive_robot_notifications()
 
     def on_pkt_receive(self, pkt):
         if (len(pkt) == 0):
@@ -71,6 +92,9 @@ class RobotController():
 #        self.send_powerup(bytearray([1]))
 #        self.send_hazard(bytearray([1]))
 
+    def receive_robot_notifications(self):
+        #while True:
+            self.robot.waitForNotifications(1.0)
 
     # Function to send powerup
     def send_powerup(self, powerup_byte):
