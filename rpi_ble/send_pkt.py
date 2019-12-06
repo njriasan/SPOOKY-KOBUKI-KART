@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import inspect
 import sys
 import struct
-import threading
 import time
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
@@ -40,7 +40,6 @@ class RobotController():
 
     def __init__(self, address, server_port):
 
-        print("connected")
                         
 
         # Create a new Joycon
@@ -50,6 +49,9 @@ class RobotController():
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
         self.robot.withDelegate(RobotDelegate())
+
+        print("Connected to the robot")
+
 
         # get service from robot
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
@@ -65,9 +67,9 @@ class RobotController():
 
         # get location updates from robot
         self.location_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
-
-        # location_thread = threading.Thread(target=self.receive_robot_notifications)
-        # location_thread.start()
+        handle = self.location_characteristic.valHandle
+        self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
+    
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
@@ -77,7 +79,6 @@ class RobotController():
         while True:
             pkt = self.sock.recv(12)
             self.on_pkt_receive(pkt)
-            self.receive_robot_notifications()
 
     def on_pkt_receive(self, pkt):
         if (len(pkt) == 0):
@@ -92,9 +93,6 @@ class RobotController():
 #        self.send_powerup(bytearray([1]))
 #        self.send_hazard(bytearray([1]))
 
-    def receive_robot_notifications(self):
-        #while True:
-            self.robot.waitForNotifications(1.0)
 
     # Function to send powerup
     def send_powerup(self, powerup_byte):
