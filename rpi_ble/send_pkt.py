@@ -139,7 +139,7 @@ class RobotController():
     def receive_buttons(self):
         while True:
             try:
-                pkt = self.manager_sock.recv(1)
+                pkt = self.manager_sock.recv(1, socket.MSG_DONTWAIT)
                 self.process_manager_msg(pkt)
             except socket.error:
                 pass
@@ -187,13 +187,13 @@ class RobotController():
         # Check if + is pressed. If so deliver the powerup
         # Also check if home is pressed and if so deliver the hazard
         for button in self.controller.buttons:
-            if button.name == "+" and not button.is_not_pressed():
+            if (button.name == "+" or button.name == "-") and not button.is_not_pressed():
                 self.send_powerup(bytearray([Powerups.mushroom.value]))
-            #elif button.name == "R" and not button.is_not_pressed():
+            #elif (button.name == "R" or button.name == "L") and not button.is_not_pressed():
             #    self.send_powerup(bytearray([Powerups.redshell.value]))
-            elif button.name == "HOME" and not button.is_not_pressed():
+            elif (button.name == "HOME" or button.name == "CAPTURE") and not button.is_not_pressed():
                 self.send_hazard(bytearray([Hazards.banana.value]))
-            #elif button.name == "RZ" and not button.is_not_pressed():
+            #elif (button.name == "RZ" or button.name == "LZ") and not button.is_not_pressed():
             #    self.send_hazard(bytearray([Hazards.redshell.value]))
 
 
