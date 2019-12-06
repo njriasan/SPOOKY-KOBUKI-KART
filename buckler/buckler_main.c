@@ -174,18 +174,24 @@ int main(void) {
 
   simple_ble_add_service(&robot_service);
 
-  // TODO: Register your characteristics
+  // Register your characteristics
+  
+
+  // Characteristic for button presses
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
       sizeof(controller_bytes), (uint8_t*)&controller_bytes,
       &robot_service, &controller_char);
 
+  // Characteristic for powerup sending
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
       sizeof(powerup_bytes), (uint8_t*)&powerup_bytes,
       &robot_service, &powerup_char);
 
+  // Characteristic for hazard sending
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
       sizeof(hazard_bytes), (uint8_t*)&hazard_bytes,
       &hazard_service, &powerup_char);
+  
   // Start Advertising
   simple_ble_adv_only_name();
 
