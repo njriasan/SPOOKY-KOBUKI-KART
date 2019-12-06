@@ -71,6 +71,13 @@ class RobotController():
         
         self.controller_characteristic.write(self.controller.get_output_message())
 
+    def send_powerup(self, powerup_byte):
+        self.powerup_characteristic.write(powerup_byte)
+
+    def send_hazard(self, hazard_byte):
+        self.hazard_characteristic.write(hazard_byte)
+
+
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_value, traceback):
