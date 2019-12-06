@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +40,10 @@ void poll_for_location(sn_pair_t *pair) {
     int connection_socket = accept (server_fd, NULL, NULL);
     assert (connection_socket != -1);
 
+    // Set the socket to non-blocking
+    int existing_flags = fcntl(connection_socket, F_GETFL, NULL);
+    fcntl(connection_socket, F_SETFL, O_NONBLOCK | existing_flags);
+
     // Structs for timing
     struct timeval start_time;
     struct timeval end_time;
@@ -57,8 +62,7 @@ void poll_for_location(sn_pair_t *pair) {
         // because it should be (and we need it to be since we don't send extra 0s).
         while (should_read) {
             // Read from the socket. Assumes the read is non-blocking
-            while ((read_amount = read(connection_socket, (void *) &int_location,
-                            12 - (bytes_read % 12)))) {
+            while ((read_amount = read(connection_socket, (void *) &int_location, 12 - (bytes_read % 12))) > 0) {
                 if (bytes_read == 12) {
                     bytes_read = read_amount;
                 } else {
@@ -80,6 +84,7 @@ void poll_for_location(sn_pair_t *pair) {
             location.x = (float) int_location.x_int;
             location.y = (float) int_location.y_int;
             location.z = (float) int_location.z_int;
+            printf("Setting the location\n");
             set_location(node, &location);
         }
        
@@ -106,11 +111,9 @@ void display_locations(connection_node_t *kobuki_list) {
     connection_node_t *kobuki;
     location_t location;
     for (kobuki = kobuki_list; kobuki != NULL; kobuki = kobuki->next) {
-        pthread_mutex_lock(&kobuki->location_lock);
         if (get_location(kobuki, &location)) {
             printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", kobuki->readable_name,
                     location.x, location.y, location.z);
         }
-        pthread_mutex_unlock(&kobuki->location_lock);
     }
 }

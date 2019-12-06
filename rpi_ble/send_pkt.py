@@ -59,7 +59,13 @@ class RobotController():
 
         # PUT SOCKET LISTENING CODE FOR LOCATION UPDATES
         self.manager_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.manager_sock.connect(('localhost', manager_server_port))
+        waiting_to_connect = True
+        while waiting_to_connect:
+            try:
+                self.manager_sock.connect(('localhost', manager_server_port))
+                waiting_to_connect = False
+            except socket.error:
+                continue
 
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
@@ -122,13 +128,13 @@ class RobotController():
         # Also check if home is pressed and if so deliver the hazard
         for button in self.controller.buttons:
             if button.name == "+" and not button.is_not_pressed():
-                self.send_powerup(bytearray([Powerup.mushroom]))
+                self.send_powerup(bytearray([Powerups.mushroom]))
             #elif button.name == "R" and not button.is_not_pressed():
-            #    self.send_powerup(bytearray([Powerup.redshell]))
+            #    self.send_powerup(bytearray([Powerups.redshell]))
             elif button.name == "HOME" and not button.is_not_pressed():
-                self.send_hazard(bytearray([Hazard.banana]))
+                self.send_hazard(bytearray([Hazards.banana]))
             #elif button.name == "RZ" and not button.is_not_pressed():
-            #    self.send_hazard(bytearray([Hazard.redshell]))
+            #    self.send_hazard(bytearray([Hazards.redshell]))
 
 
     # Function to send powerup

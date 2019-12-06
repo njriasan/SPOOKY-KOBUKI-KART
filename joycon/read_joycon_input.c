@@ -81,6 +81,7 @@ int spawn_server (int *port_ptr) {
         if (server != NULL) {
             int server_fd = setup_server_socket (server);
             if (server_fd != -1) {
+                *port_ptr = port_num;
                 return server_fd;
             }
         }

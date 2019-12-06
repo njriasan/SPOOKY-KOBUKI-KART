@@ -119,7 +119,8 @@ int main(int argc, char* argv[])
                         // Add code to launch a server for the process manager.
                         int server_fd = spawn_server (&node->location_server_port);
                     
-                        // 
+
+                        // Allocate the pair for the new spawn 
                         sn_pair_t *pair = malloc(sizeof(sn_pair_t));
                         assert(pair != NULL);
                         pair->server_fd = server_fd;
