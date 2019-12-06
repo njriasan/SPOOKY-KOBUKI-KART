@@ -36,13 +36,13 @@ class RobotController():
         self.controller.display_all_pressed_buttons()
 
         # robot refers to buckler, our peripheral
-        self.robot = Peripheral(addr)
+        #self.robot = Peripheral(addr)
 
         # get service from robot
-        self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
+       # self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
 
         # get characteristic from robot
-        self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
+        #self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
@@ -62,7 +62,7 @@ class RobotController():
             print ("{} ".format(hex(byte)), end="")
         print()
         
-        self.controller_characteristic.write(self.controller.get_output_message())
+        #self.controller_characteristic.write(self.controller.get_output_message())
 
     def __enter__(self):
         return self
