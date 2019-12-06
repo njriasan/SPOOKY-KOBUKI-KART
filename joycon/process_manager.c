@@ -111,6 +111,7 @@ int main(int argc, char* argv[])
                             read_size += curr_read;
                         }
                         close (node->pipe_fds[0]);
+                        // Add functionality for aggregator connection here
                         node->ble_output_pid = fork ();
                         if (node->ble_output_pid == 0) {
                             // Spawned child process
