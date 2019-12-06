@@ -8,13 +8,16 @@
 int main(void) {
     /* Define PWM duty cycle sequence */
 	pwm_init();
+	// light_green(4);
 	while (1) {
-		light_green();
+		light_green(5);
 		nrf_delay_ms(1000);
-		light_blue();
+		clear_lights(5);
 		nrf_delay_ms(1000);
-		light_red();
+
+		light_green(7);
 		nrf_delay_ms(1000);
-		// clear_lights0);
+		clear_lights(7);
+		nrf_delay_ms(1000);
 	}
 }

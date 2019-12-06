@@ -22,7 +22,7 @@
 #define PWM_PIN 3
 #define NUM_LEDS 7
 
-static void pwm_lightup(uint32_t num_leds, nrf_pwm_values_common_t *arr, size_t arr_len);
+static void pwm_lightup(nrf_pwm_values_common_t *arr, size_t arr_len);
 
 nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
 
@@ -33,11 +33,10 @@ static volatile nrf_pwm_values_common_t red_values[26] = {
     100, 100
  };
 
-static volatile nrf_pwm_values_common_t green_values[26] = {
+static volatile nrf_pwm_values_common_t green_values[24] = {
     7, 7, 7, 7, 7, 7, 7, 7,
     13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13,
-    100, 100
  };
 
 static volatile nrf_pwm_values_common_t blue_values[26] = {
@@ -47,11 +46,10 @@ static volatile nrf_pwm_values_common_t blue_values[26] = {
     100, 100
  };
 
- static volatile nrf_pwm_values_common_t clear_values[1] = {
+ static volatile nrf_pwm_values_common_t clear_values[24] = {
     13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13,
-    7, 7, 7, 7, 7, 7, 7, 7,
-    100, 100
+    13, 13, 13, 13, 13, 13, 13, 13,
  };
 
 void pwm_init() {
@@ -81,7 +79,7 @@ void pwm_init() {
     }
 }
 
-static void pwm_lightup(uint32_t num_leds, nrf_pwm_values_common_t *arr, size_t arr_len) {
+static void pwm_lightup(nrf_pwm_values_common_t *arr, size_t arr_len) {
 
     assert(arr != NULL);
 
@@ -95,21 +93,43 @@ static void pwm_lightup(uint32_t num_leds, nrf_pwm_values_common_t *arr, size_t 
 
     /* Play the PWM sequence on an intialized pwm instance*/
     // nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
-    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, num_leds, 0); // play once each led
+    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, 0); // play once each led
 }
 
-void light_green() {
-    pwm_lightup(NUM_LEDS, green_values, NRF_PWM_VALUES_LENGTH(green_values));
+void light_green(uint32_t num_leds) {
+    nrf_pwm_values_common_t values[24 * num_leds + 2];
+
+    for (uint32_t led_num = 0; led_num < num_leds; led_num++) {
+        for (int i = 0; i < 24; i++) {
+            values[led_num * 24 + i] = green_values[i];
+            printf("%d\n", i);
+        }
+    }
+    values[24 * num_leds] = 100;
+    values[24 * num_leds + 1] = 100;
+
+    pwm_lightup(values, NRF_PWM_VALUES_LENGTH(values));
 }
 
-void light_blue() {
-    pwm_lightup(NUM_LEDS, blue_values, NRF_PWM_VALUES_LENGTH(blue_values));
-}
+// void light_blue() {
+//     pwm_lightup(blue_values, NRF_PWM_VALUES_LENGTH(blue_values));
+// }
 
-void light_red() {
-    pwm_lightup(NUM_LEDS, red_values, NRF_PWM_VALUES_LENGTH(red_values));
-}
+// void light_red() {
+//     pwm_lightup(red_values, NRF_PWM_VALUES_LENGTH(red_values));
+// }
 
-void clear_lights() {
-    pwm_lightup(NUM_LEDS, clear_values, NRF_PWM_VALUES_LENGTH(clear_values));
+void clear_lights(uint32_t num_leds) {
+    nrf_pwm_values_common_t values[24 * num_leds + 2];
+
+    for (uint32_t led_num = 0; led_num < num_leds; led_num++) {
+        for (int i = 0; i < 24; i++) {
+            values[led_num * 24 + i] = clear_values[i];
+            printf("%d\n", i);
+        }
+    }
+    values[24 * num_leds] = 100;
+    values[24 * num_leds + 1] = 100;
+
+    pwm_lightup(values, NRF_PWM_VALUES_LENGTH(values));
 }
