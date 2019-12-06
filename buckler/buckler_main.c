@@ -34,6 +34,9 @@
 
 #define NUM_BUTTONS 5
 
+void controller_evt_write();
+
+
 // I2C manager
 NRF_TWI_MNGR_DEF(twi_mngr_instance, 5, 0);
 
@@ -58,14 +61,15 @@ static simple_ble_service_t robot_service = {{
 }};
 
 // TODO: Declare control characteristic and variable for our service
-static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
+#define CONTROLLER_UUID 0xeda1
+static simple_ble_char_t controller_char = {.uuid16 = CONTROLLER_UUID};
 static uint16_t controller_bytes;
 
 static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
 static uint8_t powerup_byte;
 
 static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
-static uint8_t harzard_byte;
+static uint8_t hazard_byte;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -87,7 +91,15 @@ static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &r_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
-  printf ("%x\n", p_ble_evt->gatts_evt.handle);
+  switch (p_ble_evt->evt.gatts_evt.params.write.uuid.uuid) {
+    case (CONTROLLER_UUID): {
+      controller_evt_write();
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 }
 
 void controller_evt_write() {
@@ -192,8 +204,8 @@ int main(void) {
 
   // Characteristic for hazard sending
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(hazard_bytes), (uint8_t*)&hazard_byte,
-      &robot_service, &powerup_char);
+      sizeof(hazard_byte), (uint8_t*)&hazard_byte,
+      &robot_service, &hazard_char);
   
   // Start Advertising
   simple_ble_adv_only_name();
@@ -246,7 +258,7 @@ int main(void) {
   while (1) {
     if (powerup_counter > 0) {
       powerup_counter--;
-    } else if (powerup_bytes == 1 && r_button.value == 1 && powerup_counter == 0) {
+    } else if (powerup_byte == 1 && r_button.value == 1 && powerup_counter == 0) {
       apply_mushroom();
     } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
       decay_mushroom();
@@ -266,7 +278,7 @@ int main(void) {
 
     if (banana_counter > 0) {
       banana_counter--;
-    } else if (hazard_byutes == 1 && rz_button.value == 1) {
+    } else if (hazard_byte == 1 && rz_button.value == 1) {
       printf("%s\n", "enters BANANA");
       apply_banana();
     } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
