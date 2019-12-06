@@ -54,7 +54,7 @@ KobukiSensors_t sensors = {0};
 static simple_ble_config_t ble_config = {
         // c0:98:e5:yy:xx:xx
         .platform_id       = 0x00,    // used as 4th octect in device BLE address yy
-        .device_id         = 0x12, // TODO: replace with your lab bench number xx
+        .device_id         = 0x11, // TODO: replace with your lab bench number xx
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -99,10 +99,10 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t sr_button = {"SR", 0b1 << 6 , 6, 0};
+static button_info_t rz_button = {"RZ", 0b1 << 4 , 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &sr_button, &stick_push_button};
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
   switch (p_ble_evt->evt.gatts_evt.params.write.uuid.uuid) {
@@ -140,6 +140,9 @@ void powerup_evt_write() {
     if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
       powerup_value = powerup_byte;
       // Add information about setting the lights
+      if (powerup_byte == MUSHROOM_POWERUP) {
+        //lightup_led(7, 1);
+      }
     }
   }
   powerup_byte = NO_POWERUP;
@@ -256,7 +259,7 @@ int main(void) {
 
   // Characteristic for location sending
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
-      sizeof(shell_byte), (uint8_t*)shell_byte,
+      sizeof(shell_byte), (uint8_t*)&shell_byte,
       &robot_service, &shell_char);
   
   // Start Advertising
@@ -286,6 +289,7 @@ int main(void) {
   error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
   printf("Error Check done.\n");
+  /*
   uint8_t* readData = dwm_tag_init(&spi_instance);
   while (readData[0] != 0x40 || readData[2] != 0x00) {
     printf("Config errored!");
@@ -309,7 +313,7 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
-
+  */
   // initialize Kobuki
   kobukiInit();
   printf("Kobuki initialized!\n");
@@ -321,42 +325,52 @@ int main(void) {
 
 
   /*inialize pwm to start lights*/
-  pwm_init();
-
+  //pwm_init();
+  // lightup_led(7, 0);
+  // nrf_delay_ms(100);
   // Launch a new thread to run the dwm code
 
   // loop forever, running state machine
   uint32_t timer_prev = read_timer();
   uint32_t timer_curr;
   bool shouldPollPos = false;
-  lightup_led(5, 1);
-  nrf_delay_ms(1);
   while (1) {
     timer_curr = read_timer();
     // Update location roughly every 1/10 of a second
-    if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.1)) {
+    if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.5)) {
       timer_prev = timer_curr;
-      while (!dwm_request_pos(&spi_instance));
+      //while (!dwm_request_pos(&spi_instance));
     }
     if (!active_hazard) {
       if (active_powerup) {
         // Add logic for checking if the powerup has expired
         compare_time = read_timer();
         if (get_time_elapsed(powerup_starttime, compare_time) > powerup_duration) {
-          decay_mushroom();  
+          decay_mushroom();
+          //printf("%s\n", "powerup ended");
+          //lightup_led(7, 0);  
+          //nrf_delay_ms(100);
+        } else {
+          v_fsm.t_curr = read_timer();
         }
       } else if (v_fsm.state == MUSHROOM_DECAY) {
         decay_mushroom();
+        // nrf_delay_ms(100);
       // Add logic for the button press here
-      } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+      } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
+        printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();
+          // nrf_delay_ms(100);
         } else if (powerup_value == REDSHELL_POWERUP) {
           apply_redshell_powerup();
         } else if (powerup_value == BLUESHELL_POWERUP) {
           apply_blueshell_powerup();
         }
       } else if (x_button.value == 1) {
+        if (v_fsm.state == EXIT_POWERUP) {
+          printf("Transitioned to accelerating with velocity %lf\n", v_fsm.v);
+        }
         // Acclerating
         on_X_press();
       } else if (b_button.value == 1) {
@@ -373,6 +387,8 @@ int main(void) {
       compare_time = read_timer();
       if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
         decay_hazard(); 
+      } else {
+          v_fsm.t_curr = read_timer();
       }
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
@@ -404,11 +420,11 @@ int main(void) {
 	  }
   	// Drive the Kobuki
   	drive();
+    printf("v: %lf\n", v_fsm.v);
     if (shouldPollPos) {
-      update_dwm_pos(&spi_instance, location_bytes);
-      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
+      //update_dwm_pos(&spi_instance, location_bytes);
+      //simple_ble_notify_char(&location_char);
     }
-    // lightup_led(5, 1);
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
   	/* May read sensors later. */

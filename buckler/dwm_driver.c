@@ -194,7 +194,7 @@ bool dwm_request_pos(nrf_drv_spi_t *s) {
   uint8_t data[2];
   data[0] = 0x02;
   data[1] = 0x00;
-  printf("Input commands: %x %x\n", data[0], data[1]);
+  // printf("Input commands: %x %x\n", data[0], data[1]);
   update_message(data, 2);
   // Send TLV request to tag
   ret_code_t err_code = nrf_drv_spi_transfer(spi, data, 2, NULL, 0);
@@ -217,7 +217,7 @@ uint8_t *dwm_recieve_pos(nrf_drv_spi_t *s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  // printf("%x %x\n", size_num[0], size_num[1]);
   // Reading data from tag
   uint8_t* readData = (uint8_t *)malloc(sizeof(uint8_t)*size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
@@ -225,11 +225,11 @@ uint8_t *dwm_recieve_pos(nrf_drv_spi_t *s) {
   if (err_code != NRF_SUCCESS) {
     return NULL;
   }
-  int i = 0;
-  while (i < size_num[0]) {
-    printf("%x ", readData[i++]);
-  }
-  printf("\n");
+  // int i = 0;
+  // while (i < size_num[0]) {
+  //   printf("%x ", readData[i++]);
+  // }
+  // printf("\n");
   return readData;
 }
 

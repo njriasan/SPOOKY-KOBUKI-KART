@@ -9,7 +9,6 @@
 
 #define HARD_TURNING_RATE .6
 #define SOFT_TURNING_RATE .55
-#define ACCELERATION 800
 #define BRAKING -1400
 
 #define PRESCALE_VALUE 4

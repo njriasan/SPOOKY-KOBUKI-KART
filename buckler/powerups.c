@@ -43,81 +43,87 @@ void apply_mushroom() {
   	v_fsm.t_curr = read_timer();
   	powerup_duration = MUSHROOM_TICKS;
     powerup_starttime = read_timer();
-    // Add light logic here
-  	lightup_led(5, 2);
-  	nrf_delay_ms(1);
+	  powerup_value = NO_POWERUP;
 }
 
 void apply_redshell_powerup() {
     shell_byte = REDSHELL_BYTE;
-    APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
+    simple_ble_notify_char(&shell_char);
     complete_powerup();
 }
 
 void apply_blueshell_powerup() {
     shell_byte = BLUESHELL_BYTE;
-    APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
+    simple_ble_notify_char(&shell_char);
     complete_powerup();
 }
 
-oid decay_mushroom() {
-    active_powerup = false;
+void decay_mushroom() {
+  active_powerup = false;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
-  	v_fsm.t_curr = read_timer();
+  v_fsm.t_curr = read_timer();
 	if (v_fsm.v <= BASE_VELOCITY_MAX) {
 		complete_powerup();
 	} else {
 		v_update();
 	}
-	powerup_byte = NO_POWERUP;
 }
 
 void apply_banana() {
-    active_hazard = true;
+  active_hazard = true;
 	complete_powerup();
+	powerup_value = NO_POWERUP;
+	v_fsm.state = REST;
+  v_fsm.v = 0.0;
+  v_fsm.v_dot = 0.0;
 	t_fsm.state = BANANA;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
-    hazard_starttime = read_timer();
+  hazard_starttime = read_timer();
 	hazard_duration = HAZARD_TICKS;
-	lightup_led(5, 3);
-	nrf_delay_ms(1);
 }
 
 void apply_redshell_hazard() {
-    active_hazard = true;
-    complete_powerup();
+  active_hazard = true;
+  complete_powerup();
+	powerup_value = NO_POWERUP;
+	v_fsm.state = REST;
+  v_fsm.v = 0.0;
+  v_fsm.v_dot = 0.0;
 	t_fsm.state = REDSHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	hazard_duration = HAZARD_TICKS;
-    // Add lights information
 }
 
 void apply_blueshell_hazard() {
-    active_hazard = true;
-    complete_powerup();
+  active_hazard = true;
+  complete_powerup();
+	powerup_value = NO_POWERUP;
+	v_fsm.state = REST;
+  v_fsm.v = 0.0;
+  v_fsm.v_dot = 0.0;
 	t_fsm.state = BLUESHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	hazard_duration = HAZARD_TICKS;
-    // Add lights information
 }
 
 void decay_hazard() {
-    active_hazard = false;
+  active_hazard = false;
 	t_fsm.state = CENTER;
 	hazard_value = NO_HAZARD;
+	hazard_duration = 0;
 }
 
 void complete_powerup() {
-    active_powerup = false;
-	powerup_counter = 0;
+  active_powerup = false;
+	powerup_duration = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
-	powerup_value = NO_POWERUP;
+  v_fsm.v_dot = ACCELERATION;
 	//clear_lights();
 	v_update();
 }

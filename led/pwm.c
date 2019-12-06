@@ -20,7 +20,6 @@
 #include "nrf_delay.h"
 
 #define PWM_PIN 3
-#define NUM_COLORS 4
 
 static void pwm_lightup(nrf_pwm_values_common_t *arr, size_t arr_len);
 
@@ -48,6 +47,12 @@ static volatile nrf_pwm_values_common_t blue_values[24] = {
     13, 13, 13, 13, 13, 13, 13, 13,
     13, 13, 13, 13, 13, 13, 13, 13,
     7, 7, 7, 7, 7, 7, 7, 7,
+};
+
+static volatile nrf_pwm_values_common_t yellow_values[24] = {
+    7, 7, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 7, 7, 7, 7,
+    13, 13, 13, 13, 13, 13, 13, 13,
 };
 
 void pwm_init() {
@@ -99,7 +104,10 @@ void lightup_led(uint32_t num_leds, uint32_t color_id) {
         color_values = green_values;
     } else if (color_id == 3) {
         color_values = blue_values;
-    } else{
+    } 
+    else if (color_id == 4) {
+        color_values = yellow_values;
+    } else {
         color_values = clear_values;
     }
 
