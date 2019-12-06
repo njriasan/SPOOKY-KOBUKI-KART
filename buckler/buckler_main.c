@@ -62,10 +62,10 @@ static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
 static uint16_t controller_bytes;
 
 static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
-static uint16_t powerup_bytes;
+static uint8_t powerup_byte;
 
 static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
-static uint16_t harzard_bytes;
+static uint8_t harzard_byte;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -87,15 +87,18 @@ static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &r_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
-    // TODO: logic for each characteristic and related state changes
+  printf ("%x\n", p_ble_evt->gatts_evt.handle);
+}
+
+void controller_evt_write() {
   //printf("%x\n", stick_push_button.value);
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
-    uint8_t *bytes_look = (uint8_t *) &controller_bytes;
-  	printf("%x %x\n", bytes_look[0], bytes_look[1]);
-  	printf("\n\n");
-    printf("%x\n", rz_button.value);
+  //uint8_t *bytes_look = (uint8_t *) &controller_bytes;printf("%x %x\n", bytes_look[0], bytes_look[1]);
+  //printf("\n\n");
+  //printf("%x\n", rz_button.value);
+
 }
 
 void print_velocity_state(velocity_states current_state){
@@ -184,13 +187,13 @@ int main(void) {
 
   // Characteristic for powerup sending
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(powerup_bytes), (uint8_t*)&powerup_bytes,
+      sizeof(powerup_byte), (uint8_t*)&powerup_byte,
       &robot_service, &powerup_char);
 
   // Characteristic for hazard sending
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(hazard_bytes), (uint8_t*)&hazard_bytes,
-      &hazard_service, &powerup_char);
+      sizeof(hazard_bytes), (uint8_t*)&hazard_byte,
+      &robot_service, &powerup_char);
   
   // Start Advertising
   simple_ble_adv_only_name();
