@@ -3,7 +3,7 @@ import inspect
 import sys
 import struct
 import time
-from enum import Enum
+from enum import IntEnum
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
 import argparse
@@ -28,11 +28,11 @@ CHAR_UUIDS = [
     "5607eda4-f65e-4d59-a9ff-84420d87a4ca",
     ] 
 
-class Powerups(Enum):
+class Powerups(IntEnum):
     mushroom = 1
     redshell = 2
 
-class Hazards(Enum):
+class Hazards(IntEnum):
     banana = 1
     redshell = 2
 
@@ -128,21 +128,23 @@ class RobotController():
         # Also check if home is pressed and if so deliver the hazard
         for button in self.controller.buttons:
             if button.name == "+" and not button.is_not_pressed():
-                self.send_powerup(bytearray([Powerups.mushroom]))
+                self.send_powerup(bytearray([Powerups.mushroom.value]))
             #elif button.name == "R" and not button.is_not_pressed():
-            #    self.send_powerup(bytearray([Powerups.redshell]))
+            #    self.send_powerup(bytearray([Powerups.redshell.value]))
             elif button.name == "HOME" and not button.is_not_pressed():
-                self.send_hazard(bytearray([Hazards.banana]))
+                self.send_hazard(bytearray([Hazards.banana.value]))
             #elif button.name == "RZ" and not button.is_not_pressed():
-            #    self.send_hazard(bytearray([Hazards.redshell]))
+            #    self.send_hazard(bytearray([Hazards.redshell.value]))
 
 
     # Function to send powerup
     def send_powerup(self, powerup_byte):
+        print("Powerup Sent")
         self.powerup_characteristic.write(powerup_byte)
 
     # Function to send hazard
     def send_hazard(self, hazard_byte):
+        print("Hazard Sent")
         self.hazard_characteristic.write(hazard_byte)
 
 
