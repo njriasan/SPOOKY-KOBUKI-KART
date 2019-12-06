@@ -30,6 +30,7 @@
 #include "states.h"
 #include "fsm.h"
 #include "powerups.h"
+#include "pwm.h"
 
 #define NUM_BUTTONS 5
 
@@ -230,6 +231,8 @@ int main(void) {
   init_velocity_fsm(&v_fsm);
   init_turning_fsm(&t_fsm);
 
+  pwm_init();
+  light_green();
   // loop forever, running state machine
   while (1) {
     if (powerup_counter > 0) {
@@ -238,6 +241,7 @@ int main(void) {
       apply_mushroom();
     } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
       decay_mushroom();
+      light_green();
     } else if (x_button.value == 1) {
 	    // Acclerating
 	    on_X_press();
@@ -258,6 +262,7 @@ int main(void) {
       apply_banana();
     } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
       decay_banana();
+      light_green();
     } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();

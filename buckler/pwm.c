@@ -27,7 +27,7 @@ static void pwm_lightup(uint32_t num_leds, nrf_pwm_values_common_t *arr, size_t 
 nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
 
 static volatile nrf_pwm_values_common_t red_values[26] = {
-	13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13,
     7, 7, 7, 7, 7, 7, 7, 7, 
     13, 13, 13, 13, 13, 13, 13, 13,
     100, 100
@@ -48,7 +48,10 @@ static volatile nrf_pwm_values_common_t blue_values[26] = {
  };
 
  static volatile nrf_pwm_values_common_t clear_values[1] = {
-    13
+    13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13,
+    7, 7, 7, 7, 7, 7, 7, 7,
+    100, 100
  };
 
 void pwm_init() {
@@ -91,7 +94,7 @@ static void pwm_lightup(uint32_t num_leds, nrf_pwm_values_common_t *arr, size_t 
     };
 
     /* Play the PWM sequence on an intialized pwm instance*/
-    //nrf_drv_pwm_simple_playback(m_pwm0_ptr, &seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
+    // nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
     nrf_drv_pwm_simple_playback(&m_pwm0, &seq, num_leds, 0); // play once each led
 }
 
