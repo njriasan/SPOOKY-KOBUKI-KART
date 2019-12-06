@@ -67,18 +67,31 @@ class RobotController():
 
         # get location updates from robot
         self.location_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
+        # Code for subscribing to the
         handle = self.location_characteristic.valHandle
         self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
-    
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect(('localhost', server_port))
+        self.sock.setblocking(0)
 
+    
+        self.receive_buttons()
+
+    def receive_buttons(self):
         while True:
-            pkt = self.sock.recv(12)
-            self.on_pkt_receive(pkt)
+            try:
+                pkt = self.sock.recv(12)
+                self.on_pkt_receive(pkt)
+            except socket.error:
+                # If we send a packet we may receive notifications as
+                # an interrupt. If we do not receive a packet then
+                # waitForNotifications will enable us to poll on our reads
+                # from the socket, although if it recieves a packet it will
+                # return sooner, so it is imprecise
+                self.robot.waitForNotifications(0.1)
 
     def on_pkt_receive(self, pkt):
         if (len(pkt) == 0):
@@ -98,8 +111,10 @@ class RobotController():
     def send_powerup(self, powerup_byte):
         self.powerup_characteristic.write(powerup_byte)
 
+    # Function to send hazard
     def send_hazard(self, hazard_byte):
         self.hazard_characteristic.write(hazard_byte)
+
 
     def __enter__(self):
         return self
