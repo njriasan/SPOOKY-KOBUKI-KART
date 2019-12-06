@@ -60,6 +60,12 @@ static simple_ble_service_t robot_service = {{
 static simple_ble_char_t controller_char = {.uuid16 = 0xeda1};
 static uint16_t controller_bytes;
 
+static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
+static uint16_t powerup_bytes;
+
+static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
+static uint16_t harzard_bytes;
+
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
@@ -172,6 +178,13 @@ int main(void) {
       sizeof(controller_bytes), (uint8_t*)&controller_bytes,
       &robot_service, &controller_char);
 
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(powerup_bytes), (uint8_t*)&powerup_bytes,
+      &robot_service, &powerup_char);
+
+  simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
+      sizeof(hazard_bytes), (uint8_t*)&hazard_bytes,
+      &hazard_service, &powerup_char);
   // Start Advertising
   simple_ble_adv_only_name();
 
@@ -221,7 +234,7 @@ int main(void) {
   while (1) {
     if (powerup_counter > 0) {
       powerup_counter--;
-    } else if (r_button.value == 1 && powerup_counter == 0) {
+    } else if (powerup_bytes == 1 && r_button.value == 1 && powerup_counter == 0) {
       apply_mushroom();
     } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
       decay_mushroom();
@@ -240,7 +253,7 @@ int main(void) {
 
     if (banana_counter > 0) {
       banana_counter--;
-    } else if (rz_button.value == 1) {
+    } else if (hazard_byutes == 1 && rz_button.value == 1) {
       printf("%s\n", "enters BANANA");
       apply_banana();
     } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
@@ -267,7 +280,7 @@ int main(void) {
 	    // Go straight
 	    on_stick_release();
 	  }
-  	// Drive the kobuki
+  	// Drive the Kobuki
   	drive();
 
   	print_velocity_state(v_fsm.state);
