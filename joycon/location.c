@@ -160,18 +160,18 @@ connection_node_t *get_closest_kobuki(kobuki_info_t *in_play_kobukis, size_t num
         return NULL;
     }
     int index = -1;
-    double closet_distance = INFINITY;
+    double closest_distance = INFINITY;
     for (size_t i = 0; i < num_kobukis; i++) {
         if (i != requesting_index) {
             double distance = get_euclidean_distance (&in_play_kobukis[i].location,
-                    &in_play_kobukis[requsting_index].location);
+                    &in_play_kobukis[requesting_index].location);
             if (distance < closest_distance) {
                 closest_distance = distance;
                 index = i;
             }
         }
     }
-    return in_play_kobukis[i].kobuki_node;
+    return in_play_kobukis[index].kobuki_node;
 }
 
 /*

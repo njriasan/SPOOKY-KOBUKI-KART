@@ -1,6 +1,6 @@
 CC=gcc
 FLAGS= -g -Wall -std=gnu11 -pthread
-LIBRARIES= -lhidapi-hidraw
+LIBRARIES= -lhidapi-hidraw -lm
 
 %.o: %.c
 	$(CC) $(FLAGS) -c $<
