@@ -105,14 +105,15 @@ void poll_for_location(sn_pair_t *pair) {
         // Check if you need to deliver an event
         uint8_t event_value = get_event_request_reset(node);
         if (event_value != NO_EVENT) {
-           uint8_t write_result = 0;
-           while ((write_result = write(connection_socket, &event_value, 1)) == -1) {
-               printf("Non-blocking issue with socket\n");
-           }
-           if (write_result == 0) {
-                free(pair);
-                pthread_exit(NULL);
-           }
+          printf("Event triggered\n");
+          uint8_t write_result = 0;
+          while ((write_result = write(connection_socket, &event_value, 1)) == -1) {
+              printf("Non-blocking issue with socket\n");
+          }
+          if (write_result == 0) {
+              free(pair);
+              pthread_exit(NULL);
+          }
         }
 
         // Update the end of the loop 
@@ -179,6 +180,7 @@ connection_node_t *get_closest_kobuki(kobuki_info_t *in_play_kobukis, size_t num
  * that Kobuki.
  */
 void assign_redshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
+    printf("Received redshell request\n");
     connection_node_t *closest = get_closest_kobuki (in_play_kobukis, num_kobukis, requesting_index);
     // If there is no closest Kobuki then do nothing
     if (closest != NULL) {
@@ -196,6 +198,7 @@ void assign_redshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t 
  * that Kobuki.
  */
 void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
+    printf("Received blueshell request\n");
     if (num_kobukis != 0) {
         connection_node_t *leader = get_leading_kobuki (in_play_kobukis, num_kobukis);
         uint8_t existing_event = get_event_request(leader);
@@ -213,9 +216,9 @@ void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
     // Add code for processing if any kobukis use a powerup
     for (size_t i = 0; i < num_kobukis; i++) {
         connection_node_t *node = in_play_kobukis[i].kobuki_node;
-        uint8_t shell_request = get_shell_request(node);
+        uint8_t shell_request = get_shell_request_reset(node);
         if (shell_request == REDSHELL_REQUEST) {
-            assign_blueshell(in_play_kobukis, num_kobukis, i);
+            assign_redshell(in_play_kobukis, num_kobukis, i);
         } else if (shell_request == BLUESHELL_REQUEST) {
             assign_blueshell(in_play_kobukis, num_kobukis, i); 
         }
