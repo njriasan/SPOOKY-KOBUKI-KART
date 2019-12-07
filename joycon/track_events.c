@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include "track_events.h"
 
-location_t mushroom_tile = {6614.000000, -295.000000, 1358.000000};
+location_t mushroom_tile = {1746.000000, 10465.000000, 753.000000};
 
-location_t redshell_tile = {4454.000000, -677.000000, 1570.000000};
+location_t redshell_tile = {2500.000000, 10015.000000, 50.000000};
 
-location_t banana_tile = {7637.000000, -37.000000, 1574.000000};
+location_t banana_tile = {3816.000000, 11690.000000, 515.000000};
 
 
 

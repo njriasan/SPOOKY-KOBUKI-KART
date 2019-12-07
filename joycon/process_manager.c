@@ -24,7 +24,7 @@
 
 // List of all the mac addresses for possible joy con pairings
 const char* joycon_mac_addrs[NUM_MAC_ADDRS] =
-{"7c:bb:8a:9e:3e:8d", "98:b6:e9:71:62:01", "b8:78:26:1e:35:06", "b8:78:26:20:dc:1e"};
+{"7c:bb:8a:9e:3e:8d", "b8:78:26:1e:35:06", "98:b6:e9:71:62:01", "b8:78:26:20:dc:1e"};
 
 // List of all MAC addresses for the bucklers (replace me later)
 const char* buckler_mac_addrs[NUM_MAC_ADDRS] =

@@ -182,15 +182,14 @@ class RobotController():
         #self.controller.display_all_pressed_buttons()
         
         self.controller_characteristic.write(self.controller.get_output_message())
-        # Check if + is pressed. If so deliver the powerup
-        # Also check if home is pressed and if so deliver the hazard
         for button in self.controller.buttons:
-            if (button.name == "+" or button.name == "-") and not button.is_not_pressed():
-                self.send_powerup(bytearray([Powerups.mushroom.value]))
-            elif (button.name == "R" or button.name == "L") and not button.is_not_pressed():
-                self.send_powerup(bytearray([Powerups.redshell.value]))
-            elif (button.name == "HOME" or button.name == "CAPTURE") and not button.is_not_pressed():
+            if (button.name == "HOME" or button.name == "CAPTURE") and not button.is_not_pressed():
                 self.send_hazard(bytearray([Hazards.banana.value]))
+            elif (button.name == "-" or button.name == "+") and not button.is_not_pressed():
+                self.send_powerup(bytearray([Powerups.mushroom.value]))
+            elif (button.name == "Y") and not button.is_not_pressed():
+                self.send_powerup(bytearray([Powerups.redshell.value]))
+
 
 
     # Function to send powerup
