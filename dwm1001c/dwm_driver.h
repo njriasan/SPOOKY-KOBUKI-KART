@@ -12,3 +12,6 @@ uint8_t *dwm_read_rate(nrf_drv_spi_t *s);
 
 // Function to read the position from the connected tag.
 uint8_t *dwm_read_pos(nrf_drv_spi_t *s);
+
+// Function to reset the connected tag.
+uint8_t *dwm_reset(nrf_drv_spi_t *s);
