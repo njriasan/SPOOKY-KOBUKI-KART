@@ -34,7 +34,7 @@ const char* buckler_mac_addrs[NUM_MAC_ADDRS] =
 const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right", "red", "blue"};
 
 // List of all port names for spoofed inputs
-const char* port_names[NUM_MAC_ADDRS] = {"12345", "12346", "12347", "12348"};
+const char* port_names[NUM_MAC_ADDRS] = {"12345", "12346", "12347", "12350"};
 
 static connection_node_t* unprocessed_macs = NULL;
 static connection_node_t* processed_macs   = NULL;

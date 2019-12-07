@@ -214,7 +214,7 @@ int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num) {
     gettimeofday (&start_time, NULL);
     // Add in logic to print
     uint64_t time_remaining = start_time.tv_sec * SECOND_TO_MICROSECONDS + start_time.tv_usec;
-    fprintf(write_file, "%lu\n", time_remaining);
+    fprintf(write_file, "%llu\n", time_remaining);
     transfer_hid_data (connection_socket, response, MSG_SIZE);
   }
 

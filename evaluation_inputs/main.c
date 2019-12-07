@@ -87,7 +87,7 @@ int main (int argc, char *argv[]) {
     gettimeofday (&start_time, NULL);
     // Add in logic to print
     uint64_t time_remaining = start_time.tv_sec * SECOND_TO_MICROSECONDS + start_time.tv_usec;
-    printf("%lu\n", time_remaining);
+    printf("%llu\n", time_remaining);
     transfer_controller_data(connection_socket, msg, 12);
     if (send_interval == 0) {
         sleep(100000);
