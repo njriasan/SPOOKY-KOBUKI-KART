@@ -23,13 +23,13 @@
 
 
 // List of all the mac addresses for possible joy con pairings
-const char* joycon_mac_addrs[NUM_MAC_ADDRS] = {"7c:bb:8a:9e:3e:8d", "98:b6:e9:71:62:01"};
+const char* joycon_mac_addrs[NUM_MAC_ADDRS] = {"7c:bb:8a:9e:3e:8d", "98:b6:e9:71:62:01", "b8:78:26:1e:35:06", "b8:78:26:20:dc:1e"};
 
 // List of all MAC addresses for the bucklers (replace me later)
-const char* buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:00:00:11", "c0:98:e5:00:00:12"};
+const char* buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:00:00:11", "c0:98:e5:00:00:12", "c0:98:e5:00:00:13", "c0:98:e5:00:00:14"};
 
 // List of human readable names for each of our Kobukis
-const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right"};
+const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right", "red", "blue"};
 
 static connection_node_t* unprocessed_macs = NULL;
 static connection_node_t* processed_macs   = NULL;
