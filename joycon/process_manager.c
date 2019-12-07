@@ -28,7 +28,7 @@ const char* joycon_mac_addrs[NUM_MAC_ADDRS] =
 
 // List of all MAC addresses for the bucklers (replace me later)
 const char* buckler_mac_addrs[NUM_MAC_ADDRS] =
-{"c0:98:e5:00:00:11", "c0:98:e5:00:00:14", "c0:98:e5:00:00:13", "c0:98:e5:00:00:12"} ;
+{"c0:98:e5:00:00:11", "c0:98:e5:00:00:13", "c0:98:e5:00:00:14", "c0:98:e5:00:00:12"} ;
 
 // List of human readable names for each of our Kobukis
 const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right", "red", "blue"};
