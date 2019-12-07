@@ -55,6 +55,7 @@ int main(int argc, char* argv[]) {
     fprintf (stderr, "Usage: ./controller\n");
     exit (1);
   }
+  fprintf(stderr, "Starting the process manager.\n");
   int res;
 
   // Initialize all wide strings

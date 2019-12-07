@@ -24,6 +24,7 @@ def connect_joycon(addr):
     subprocess.call (["bluetoothctl"], stdin=f)
 
 def main():
+  print("Starting the connection script")
   while True:
     scan_joycons ()
     sleep (1)
