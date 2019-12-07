@@ -115,10 +115,10 @@ void transfer_hid_data (int socket_fd, unsigned char *data, unsigned int size) {
     int total_write = 0;
     int curr_write = 0;
     
-    for (int i = 0; i < size; i++) {
-        printf("%x ", data[i]);
-    }
-    printf("\n");
+    //for (int i = 0; i < size; i++) {
+    //    printf("%x ", data[i]);
+    //}
+    //printf("\n");
     
     while(total_write < size && (curr_write = write (socket_fd, 
                     data + total_write, size - total_write)) > 0) {

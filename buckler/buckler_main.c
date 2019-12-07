@@ -319,6 +319,7 @@ int main(void) {
   
   // initialize LED
   led_init();
+  lightup_led(0);
 
   // initialize Kobuki
   kobukiInit();

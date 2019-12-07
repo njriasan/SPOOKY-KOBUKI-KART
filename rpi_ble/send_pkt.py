@@ -179,7 +179,7 @@ class RobotController():
             sys.exit (1)
         assert(len(pkt) == 12)
         self.controller.parse_next_state(pkt)
-        self.controller.display_all_pressed_buttons()
+        #self.controller.display_all_pressed_buttons()
         
         self.controller_characteristic.write(self.controller.get_output_message())
         # Check if + is pressed. If so deliver the powerup
@@ -191,8 +191,6 @@ class RobotController():
                 self.send_powerup(bytearray([Powerups.redshell.value]))
             elif (button.name == "HOME" or button.name == "CAPTURE") and not button.is_not_pressed():
                 self.send_hazard(bytearray([Hazards.banana.value]))
-            #elif (button.name == "RZ" or button.name == "LZ") and not button.is_not_pressed():
-            #    self.send_hazard(bytearray([Hazards.redshell.value]))
 
 
     # Function to send powerup

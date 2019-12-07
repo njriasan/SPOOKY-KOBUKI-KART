@@ -73,14 +73,6 @@ int main(int argc, char* argv[])
     res = hid_init();
     assert (!res);
 
-    // Initialize the areas of each powerup/hazard
-    mushroom_area = area_rectangle(&mushroom_tile);
-    assert(mushroom_area > 0.0);
-    redshell_area = area_rectangle(&redshell_tile);
-    assert(redshell_area > 0.0);
-    banana_area = area_rectangle(&banana_tile);
-    assert(banana_area > 0.0);
-
     // Interval at which to poll. This is a heuristic decision about
     // how often we expect to get a location update. 
     const int polling_time = SECOND_TO_MICROSECONDS / 2;

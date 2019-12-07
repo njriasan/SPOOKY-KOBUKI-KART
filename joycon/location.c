@@ -100,6 +100,7 @@ void poll_for_location(sn_pair_t *pair) {
             location.y = (float) int_location.y_int;
             location.z = (float) int_location.z_int;
             printf("Setting the location\n");
+            printf("Location: %f %f %f\n", location.x, location.y, location.z);
             set_location(node, &location);
         }
 
@@ -213,8 +214,8 @@ void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
         uint8_t shell_request = get_shell_request_reset(node);
         if (shell_request == REDSHELL_REQUEST) {
             assign_redshell(in_play_kobukis, num_kobukis, i);
-        } else if (shell_request == BLUESHELL_REQUEST) {
-            assign_blueshell(in_play_kobukis, num_kobukis, i); 
+        // } else if (shell_request == BLUESHELL_REQUEST) {
+        //    assign_blueshell(in_play_kobukis, num_kobukis, i); 
         }
     }
 }
@@ -224,6 +225,28 @@ void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
  */
 void assign_track_events(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
     // Add code to determine if any kobukis are in range of the powerup/hazard
+    for (size_t i = 0; i < num_kobukis; i++) {
+        if (get_euclidean_distance(&in_play_kobukis[i].location, &mushroom_tile) <= ELEM_RADIUS) {
+            connection_node_t *node = in_play_kobukis[i].kobuki_node;
+            uint8_t existing_event = get_event_request(node);
+            if (existing_event == NO_EVENT) {
+                set_event_request(node, MUSHROOM_POWERUP);
+            }
+        } else if (get_euclidean_distance(&in_play_kobukis[i].location, &redshell_tile) <= ELEM_RADIUS) {
+            connection_node_t *node = in_play_kobukis[i].kobuki_node;
+            uint8_t existing_event = get_event_request(node);
+            if (existing_event == NO_EVENT) {
+                set_event_request(node, REDSHELL_POWERUP);
+            }
+        } else if (get_euclidean_distance(&in_play_kobukis[i].location, &banana_tile) <= ELEM_RADIUS) {
+            connection_node_t *node = in_play_kobukis[i].kobuki_node;
+            uint8_t existing_event = get_event_request(node);
+        if (existing_event != BANANA_HAZARD && existing_event != REDSHELL_HAZARD
+               && existing_event != BLUESHELL_HAZARD) {
+                set_event_request(node, BANANA_HAZARD);
+            }
+        } 
+    }
 }
 
 /*
@@ -231,10 +254,10 @@ void assign_track_events(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
  */
 void generate_leaderboard(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
     // Fill in code to generate rankings based on the map layout
-    for (size_t i = 0; i < num_kobukis; i++) {
-        printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", in_play_kobukis[i].kobuki_node->readable_name,
-                in_play_kobukis[i].location.x, in_play_kobukis[i].location.y, in_play_kobukis[i].location.z);
-    }
+    //for (size_t i = 0; i < num_kobukis; i++) {
+        //printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", in_play_kobukis[i].kobuki_node->readable_name,
+        //        in_play_kobukis[i].location.x, in_play_kobukis[i].location.y, in_play_kobukis[i].location.z);
+    //}
 }
 
 /*
@@ -256,7 +279,7 @@ void display_locations(connection_node_t *kobuki_list) {
         }
     }
     // Now generate the leaderboard
-    generate_leaderboard(valid_kobukis, num_kobukis);
+    // generate_leaderboard(valid_kobukis, num_kobukis);
 
     // Check to see if you should assign any powerups or hazards
     assign_track_events(valid_kobukis, num_kobukis);
