@@ -35,7 +35,14 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
   printf("Error Check done.\n");
   uint8_t* readData = dwm_tag_init(&spi_instance);
-  readData = dwm_read_rate(&spi_instance);
+  while (readData[0] != 0x40 || readData[2] != 0x00) {
+    printf("Config errored!");
+    free(readData);
+    readData = dwm_tag_init(&spi_instance);
+  }
+  while (!dwm_reset(&spi_instance)) {
+    print("Resetting");
+  }
   while(1) {
     dwm_read_pos(&spi_instance);
     nrf_delay_ms(1000);
