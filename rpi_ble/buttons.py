@@ -157,7 +157,7 @@ class Button:
         Prints the current status of the button
     """
     def display_status(self):
-        print(self.return_status())
+        # print(self.return_status())
 
     """
         Returns if a button is not pressed
@@ -286,12 +286,12 @@ class Controller:
     """
     def display_all_pressed_buttons(self):
         status = False
-        print("Current State:")
+        # print("Current State:")
         for button in self.buttons:
             new_status = button.display_if_pressed()
             status = status or new_status
         if not status:
-            print("No buttons are currently pressed")
+            # print("No buttons are currently pressed")
     
     """
         Constructs the output message to send over BLE to the Kobuki. 

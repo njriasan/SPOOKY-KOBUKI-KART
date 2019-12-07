@@ -60,7 +60,7 @@ class RobotDelegate(DefaultDelegate):
             assert(len(total_data) == 13)
             self.manager_sock.send(total_data)
         elif cHandle == self.shell_handle:
-            print("Receives a shell message")
+            # print("Receives a shell message")
             assert(len(data) == 1)
             # Compose a new 13 byte message with a leading shell value and then
             # 12 0s. Only send a message if it is a valid shell value
@@ -82,7 +82,7 @@ class RobotController():
 
         # Create a new Joycon
         self.controller = JoyCon()
-        self.controller.display_all_pressed_buttons()
+        # self.controller.display_all_pressed_buttons()
 
 
         # PUT SOCKET LISTENING CODE FOR LOCATION UPDATES
@@ -98,7 +98,7 @@ class RobotController():
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
 
-        print("Connected to the robot")
+        # print("Connected to the robot")
 
 
         # get service from robot
@@ -194,12 +194,12 @@ class RobotController():
 
     # Function to send powerup
     def send_powerup(self, powerup_byte):
-        print("Powerup Sent")
+        # print("Powerup Sent")
         self.powerup_characteristic.write(powerup_byte)
 
     # Function to send hazard
     def send_hazard(self, hazard_byte):
-        print("Hazard Sent")
+        # print("Hazard Sent")
         self.hazard_characteristic.write(hazard_byte)
 
 

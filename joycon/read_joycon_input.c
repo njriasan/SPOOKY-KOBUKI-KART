@@ -102,7 +102,7 @@ void read_hid_data(hid_device* actual_dev, unsigned char* response, unsigned int
     total_data += curr_read;
   }
   if (total_data == 0) {
-    fprintf (stderr, "Connection Lost\n");
+    // fprintf (stderr, "Connection Lost\n");
     exit (1);
   }
 }

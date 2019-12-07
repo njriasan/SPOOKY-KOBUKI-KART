@@ -98,18 +98,18 @@ void poll_for_location(sn_pair_t* pair) {
       location.x = (float)int_location.x_int;
       location.y = (float)int_location.y_int;
       location.z = (float)int_location.z_int;
-      printf("Setting the location\n");
-      printf("Location: %f %f %f\n", location.x, location.y, location.z);
+      // printf("Setting the location\n");
+      // printf("Location: %f %f %f\n", location.x, location.y, location.z);
       set_location(node, &location);
     }
 
     // Check if you need to deliver an event
     uint8_t event_value = get_event_request_reset(node);
     if (event_value != NO_EVENT) {
-      printf("Event triggered for %s\n", node->readable_name);
+      // printf("Event triggered for %s\n", node->readable_name);
       uint8_t write_result = 0;
       while ((write_result = write(connection_socket, &event_value, 1)) == -1) {
-        printf("Non-blocking issue with socket\n");
+        // printf("Non-blocking issue with socket\n");
       }
       if (write_result == 0) {
         free(pair);
@@ -126,7 +126,7 @@ void poll_for_location(sn_pair_t* pair) {
                           + (end_time.tv_usec - start_time.tv_usec));
 
     if (time_remaining > 0) {
-      usleep(time_remaining);
+      // usleep(time_remaining);
     }
   }
 }
@@ -174,7 +174,7 @@ connection_node_t* get_closest_kobuki(kobuki_info_t* in_play_kobukis, size_t num
  * that Kobuki.
  */
 void assign_redshell(kobuki_info_t* in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
-  printf("Received redshell request\n");
+  // printf("Received redshell request\n");
   connection_node_t* closest = get_closest_kobuki (in_play_kobukis, num_kobukis, requesting_index);
   // If there is no closest Kobuki then do nothing
   if (closest != NULL) {
@@ -192,7 +192,7 @@ void assign_redshell(kobuki_info_t* in_play_kobukis, size_t num_kobukis, size_t 
  * that Kobuki.
  */
 void assign_blueshell(kobuki_info_t* in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
-  printf("Received blueshell request\n");
+  // printf("Received blueshell request\n");
   if (num_kobukis != 0) {
     connection_node_t* leader = get_leading_kobuki (in_play_kobukis, num_kobukis);
     uint8_t existing_event    = get_event_request(leader);

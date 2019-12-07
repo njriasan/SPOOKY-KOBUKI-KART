@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     fprintf (stderr, "Usage: ./controller\n");
     exit (1);
   }
-  fprintf(stderr, "Starting the process manager.\n");
+  //fprintf(stderr, "Starting the process manager.\n");
   int res;
 
   // Initialize all wide strings
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
           } else if (node->joycon_input_pid > 0) {
             // Close the write portion of the pipe
             close (node->pipe_fds[1]);
-            printf ("Forked a new process.\n");
+            // printf ("Forked a new process.\n");
             // TODO: Add code to move this into a new thread
             char* server_num_ptr = (char*)&node->controller_server_port;
             int read_size        = 0;
