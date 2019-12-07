@@ -189,8 +189,8 @@ class RobotController():
         for button in self.controller.buttons:
             if (button.name == "+" or button.name == "-") and not button.is_not_pressed():
                 self.send_powerup(bytearray([Powerups.mushroom.value]))
-            #elif (button.name == "R" or button.name == "L") and not button.is_not_pressed():
-            #    self.send_powerup(bytearray([Powerups.redshell.value]))
+            elif (button.name == "R" or button.name == "L") and not button.is_not_pressed():
+                self.send_powerup(bytearray([Powerups.redshell.value]))
             elif (button.name == "HOME" or button.name == "CAPTURE") and not button.is_not_pressed():
                 self.send_hazard(bytearray([Hazards.banana.value]))
             #elif (button.name == "RZ" or button.name == "LZ") and not button.is_not_pressed():
