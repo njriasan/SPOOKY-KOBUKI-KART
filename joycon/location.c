@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <fcntl.h>
+#include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -133,6 +134,13 @@ typedef struct {
     location_t location;
 } kobuki_info_t;
 
+/*
+ * Helper function to calculate the euclidean distance between two locations.
+ */
+double get_euclidean_distance(location_t *l1, location_t *l2) {
+    double result = sqrt(pow(l1->x - l2->x, 2.0) + pow(l1->y - l2->y, 2.0) + pow(l1->z - l2->z, 2.0));
+    return result;
+}
 
 /*
  * Helper function to select the leading kobuki.
@@ -147,8 +155,23 @@ connection_node_t *get_leading_kobuki(kobuki_info_t *in_play_kobukis, size_t num
  */
 connection_node_t *get_closest_kobuki(kobuki_info_t *in_play_kobukis, size_t num_kobukis, 
         size_t requesting_index) {
-    // FIXME
-    return NULL;
+    // Current implementation is just a euclidean distance
+    if (num_kobukis <= 1) {
+        return NULL;
+    }
+    int index = -1;
+    double closet_distance = INFINITY;
+    for (size_t i = 0; i < num_kobukis; i++) {
+        if (i != requesting_index) {
+            double distance = get_euclidean_distance (&in_play_kobukis[i].location,
+                    &in_play_kobukis[requsting_index].location);
+            if (distance < closest_distance) {
+                closest_distance = distance;
+                index = i;
+            }
+        }
+    }
+    return in_play_kobukis[i].kobuki_node;
 }
 
 /*

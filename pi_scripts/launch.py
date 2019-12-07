@@ -8,5 +8,6 @@ import os, subprocess
 
 subprocess.Popen(["python3", "connect_joycon.py"])
 os.chdir("../joycon")
+subprocess.call(["make clean"])
 subprocess.call(["make"])
 subprocess.Popen(["./process_manager"])
