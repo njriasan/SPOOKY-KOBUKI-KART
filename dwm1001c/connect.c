@@ -41,10 +41,23 @@ int main(void) {
     readData = dwm_tag_init(&spi_instance);
   }
   while (!dwm_reset(&spi_instance)) {
-    print("Resetting");
+    printf("Resetting");
   }
   while(1) {
-    dwm_read_pos(&spi_instance);
+    readData = dwm_read_pos(&spi_instance);
+    // Extracting x, y, z coords
+    if (readData[3] == 0x41) {
+      uint8_t x[] = {readData[5], readData[6], readData[7], readData[8]};
+      uint8_t y[] = {readData[9], readData[10], readData[11], readData[12]};
+      uint8_t z[] = {readData[13], readData[14], readData[15], readData[16]};
+      
+      int x_m, y_m, z_m;
+      memcpy(&x_m, &x, sizeof(x_m));
+      memcpy(&y_m, &y, sizeof(y_m));
+      memcpy(&z_m, &z, sizeof(z_m));
+
+      printf("Coordinates: (%f, %f, %f)\n", x_m / 1000.0, y_m / 1000.0, z_m / 1000.0);
+    }
     nrf_delay_ms(1000);
   }
 }
