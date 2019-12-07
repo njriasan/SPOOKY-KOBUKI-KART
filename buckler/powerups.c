@@ -27,7 +27,7 @@ void apply_mushroom() {
   	v_fsm.t_prev = v_fsm.t_curr;
   	v_fsm.t_curr = read_timer();
   	powerup_counter = MUSHROOM_TICKS;
-  	//light_red();
+  	light_red();
 }
 
 void decay_mushroom() {
@@ -49,6 +49,7 @@ void apply_banana() {
 	t_fsm.v_left = BANANA_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	banana_counter = BANANA_TICKS;
+	light_blue();
 }
 
 void decay_banana() {

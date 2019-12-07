@@ -7,14 +7,13 @@
 
 int main(void) {
     /* Define PWM duty cycle sequence */
-    nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
-	pwm_init(&m_pwm0);
+	pwm_init();
 	while (1) {
-		light_green(&m_pwm0);
+		light_green();
 		nrf_delay_ms(1000);
-		light_blue(&m_pwm0);
+		light_blue();
 		nrf_delay_ms(1000);
-		light_red(&m_pwm0);
+		light_red();
 		nrf_delay_ms(1000);
 		// clear_lights0);
 	}
