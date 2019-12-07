@@ -193,6 +193,7 @@ int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num) {
 
   // Establish a connection with the evaluation socket
   char *host = "127.0.0.1";
+  // printf("%s\n", eval_port_num);
   int eval_socket = setup_client_socket(get_addrs(host, eval_port_num));
 
   // open the actual device

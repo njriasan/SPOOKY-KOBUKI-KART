@@ -28,7 +28,7 @@ const char* joycon_mac_addrs[NUM_MAC_ADDRS] =
 
 // List of all MAC addresses for the bucklers (replace me later)
 const char* buckler_mac_addrs[NUM_MAC_ADDRS] =
-{"c0:98:e5:00:00:11", "c0:98:e5:00:00:12", "c0:98:e5:00:00:13", "c0:98:e5:00:00:14"};
+{"c0:98:e5:00:00:11", "c0:98:e5:00:00:14", "c0:98:e5:00:00:13", "c0:98:e5:00:00:12"} ;
 
 // List of human readable names for each of our Kobukis
 const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right", "red", "blue"};
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
           } else if (node->joycon_input_pid > 0) {
             // Close the write portion of the pipe
             close (node->pipe_fds[1]);
-            //printf ("Forked a new process.\n");
+            // printf ("Forked a new process. %s\n", node->buckler_mac_addr);
             // TODO: Add code to move this into a new thread
             char* server_num_ptr = (char*)&node->controller_server_port;
             int read_size        = 0;

@@ -77,12 +77,16 @@ int main (int argc, char *argv[]) {
   assert (connection_socket != -1);
   uint8_t msg[12];
   memset(msg, 0, 12);
+  msg[2] = 0x10;
+  msg[3] = 0x8;
   struct timeval start_time;
   while (1) { 
     gettimeofday (&start_time, NULL);
     // Add in logic to print
-    
     transfer_controller_data(connection_socket, msg, 12);
+    if (send_interval == 0) {
+        sleep(100000);
+    }
     sleep(send_interval);
   }
 }
