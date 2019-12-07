@@ -9,7 +9,7 @@
 
 #define HAZARD_DELAY 10 * SECOND_TO_MICROSECONDS
 
-#define NUM_MAC_ADDRS 2
+#define NUM_MAC_ADDRS 4
 
 typedef struct {
   int server_fd;
