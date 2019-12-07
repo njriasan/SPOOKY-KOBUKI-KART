@@ -17,6 +17,9 @@
 uint8_t powerup_value = NO_POWERUP;
 uint8_t hazard_value  = NO_HAZARD;
 
+// Backup value for rz button
+uint8_t rz_backup = 0;
+
 // Whether or not the powerup/hazard is activated
 bool active_powerup = false;
 bool active_hazard  = false;
@@ -48,6 +51,7 @@ void apply_mushroom() {
   powerup_duration  = MUSHROOM_TICKS;
   powerup_starttime = read_timer();
   lightup_led(0);
+  rz_button.value = rz_backup;
   powerup_value = NO_POWERUP;
 }
 
@@ -141,6 +145,7 @@ void decay_hazard() {
 void complete_powerup() {
   active_powerup   = false;
   powerup_duration = 0;
+  rz_button.value = rz_backup;
   v_fsm.state      = EXIT_POWERUP;
   v_fsm.v_max      = BASE_VELOCITY_MAX;
   v_fsm.v_dot      = ACCELERATION;
