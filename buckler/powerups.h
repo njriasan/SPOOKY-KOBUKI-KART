@@ -33,7 +33,7 @@ extern uint32_t compare_time;
 // Information on the shell sending BLE char
 #define NO_SHELL_BYTE 0
 #define REDSHELL_BYTE 1
-#define BLUESHELL_BYTE 1
+#define BLUESHELL_BYTE 2
 extern simple_ble_char_t shell_char;
 extern uint8_t shell_byte;
 
