@@ -98,17 +98,21 @@ void on_button_release() {
   v_update();
 }
 
-void v_update() {
-
+double get_time_elapsed (uint32_t earlier_clk, uint32_t later_clk) {
   double change = 0.0;
-  if (v_fsm.t_curr < v_fsm.t_prev) {
-    uint32_t rescaled_curr = UINT32_MAX - v_fsm.t_curr;
-    change = (double) (rescaled_curr + 1 + v_fsm.t_prev);
+  if (later_clk < earlier_clk) {
+    uint32_t rescaled_curr = UINT32_MAX - later_clk;
+    change = (double) (rescaled_curr + 1 + earlier_clk);
   } else {
-    change = (double) (v_fsm.t_curr - v_fsm.t_prev);
+    change = (double) (later_clk - earlier_clk);
   }
   double diff = (change) / (BASE_CLOCK / (1 << PRESCALE_VALUE));
+  return diff;
+}
 
+void v_update() {
+
+  double diff = get_time_elapsed(v_fsm.t_prev, v_fsm.t_curr);
   v_fsm.v = v_fsm.v + diff * v_fsm.v_dot;
 
 

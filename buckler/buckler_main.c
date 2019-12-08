@@ -9,6 +9,7 @@
 
 #include "app_error.h"
 #include "app_timer.h"
+#include "app_util.h"
 #include "nrf.h"
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
@@ -16,6 +17,7 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 #include "nrf_pwr_mgmt.h"
+#include "nrf_twi_mngr.h"
 #include "nrf_drv_spi.h"
 
 #include "buckler.h"
@@ -26,6 +28,8 @@
 #include "kobukiUtilities.h"
 #include "mpu9250.h"
 #include "simple_ble.h"
+#include "dwm_driver.h"
+#include "max44009.h"
 
 #include "states.h"
 #include "fsm.h"
@@ -223,7 +227,9 @@ int main(void) {
   nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
   nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
 
-  // initialize display
+
+
+  // initialize display or dwm
   nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
   nrf_drv_spi_config_t spi_config = {
     .sck_pin = BUCKLER_LCD_SCLK,
@@ -236,10 +242,23 @@ int main(void) {
     .mode = NRF_DRV_SPI_MODE_2,
     .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST
   };
+  printf("2nd part\n");
   error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
-  display_init(&spi_instance);
-  printf("Display initialized!\n");
+  printf("Error Check done.\n");
+  uint8_t* readData = dwm_tag_init(&spi_instance);
+  while (readData[0] != 0x40 || readData[2] != 0x00) {
+    printf("Config errored!");
+    free(readData);
+    readData = dwm_tag_init(&spi_instance);
+  }
+  while (!dwm_reset(&spi_instance)) {
+    printf("Resetting");
+  }
+  printf("dwm tag initialized!\n");
+
+  // display_init(&spi_instance);
+  // printf("Display initialized!\n");
 
   // initialize i2c master (two wire interface)
   nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
@@ -260,10 +279,25 @@ int main(void) {
   init_velocity_fsm(&v_fsm);
   init_turning_fsm(&t_fsm);
 
-  pwm_init();
-  light_green();
+
+  /*inialize pwm to start lights*/
+  // pwm_init();
+  // light_green();
+
+  // Launch a new thread to run the dwm code
+
   // loop forever, running state machine
+  uint32_t timer_prev = read_timer();
+  uint32_t timer_curr;
   while (1) {
+    timer_curr = read_timer();
+    // Update location roughly every 1/10 of a second
+    if (get_time_elapsed (timer_prev, timer_curr) > 0.1) {
+      timer_prev = timer_curr;
+      update_dwm_pos(&spi_instance, location_bytes);
+      printf("Coordinates: (%d, %d, %d)\n", location_bytes[0], location_bytes[1], location_bytes[2]);
+      // simple_ble_notify_char(&location_char);
+    }
     if (powerup_counter > 0) {
       powerup_counter--;
     } else if (powerup_byte == 1 && r_button.value == 1 && powerup_counter == 0) {
@@ -317,8 +351,9 @@ int main(void) {
   	// Drive the Kobuki
   	drive();
 
-  	print_velocity_state(v_fsm.state);
-  	print_turning_state(t_fsm.state);
+
+  	//print_velocity_state(v_fsm.state);
+  	//print_turning_state(t_fsm.state);
   	/* May read sensors later. */
     // read sensors from robot
     //int status = kobukiSensorPoll(&sensors);

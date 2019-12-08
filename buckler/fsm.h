@@ -6,6 +6,8 @@
 
 #define BASE_VELOCITY_MAX 1300.0
 
+// Helper function for tracking time differences
+double get_time_elapsed (uint32_t earlier_clk, uint32_t later_clk);
 
 typedef struct {
 	velocity_states state;
