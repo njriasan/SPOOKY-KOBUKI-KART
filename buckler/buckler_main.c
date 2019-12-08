@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "app_error.h"
 #include "app_timer.h"
@@ -295,8 +296,8 @@ int main(void) {
     if (get_time_elapsed (timer_prev, timer_curr) > 0.1) {
       timer_prev = timer_curr;
       update_dwm_pos(&spi_instance, location_bytes);
-      printf("Coordinates: (%d, %d, %d)\n", location_bytes[0], location_bytes[1], location_bytes[2]);
-      // simple_ble_notify_char(&location_char);
+      printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
+      simple_ble_notify_char(&location_char);
     }
     if (powerup_counter > 0) {
       powerup_counter--;
