@@ -37,7 +37,7 @@ void update_dwm_pos(nrf_drv_spi_t* s, int32_t* location_bytes) {
     location_bytes[0] = x_m;
     location_bytes[1] = y_m;
     location_bytes[2] = z_m;
-    printf("Coordinates: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
+    // printf("Coordinates: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
   }
   free(readData);
 }

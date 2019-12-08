@@ -282,8 +282,7 @@ int main(void) {
 
 
   /*inialize pwm to start lights*/
-  // pwm_init();
-  // light_green();
+  pwm_init();
 
   // Launch a new thread to run the dwm code
 
@@ -297,8 +296,10 @@ int main(void) {
       timer_prev = timer_curr;
       update_dwm_pos(&spi_instance, location_bytes);
       printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
-      simple_ble_notify_char(&location_char);
+      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
     }
+
+    light_green();
     if (powerup_counter > 0) {
       powerup_counter--;
     } else if (powerup_byte == 1 && r_button.value == 1 && powerup_counter == 0) {
