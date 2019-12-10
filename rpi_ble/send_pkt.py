@@ -120,10 +120,10 @@ class RobotController():
 
         # Code for subscribing to the notifications
         location_handle = self.location_characteristic.valHandle
-        self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
+        self.robot.writeCharacteristic(location_handle + 1, b"\x01\x00")
 
         shell_handle = self.location_characteristic.valHandle
-        self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
+        self.robot.writeCharacteristic(shell_handle + 1, b"\x01\x00")
 
         self.robot.withDelegate(RobotDelegate(self.manager_sock, location_handle, shell_handle))
 

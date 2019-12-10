@@ -49,14 +49,12 @@ void apply_mushroom() {
 }
 
 void apply_redshell_powerup() {
-    // Add the logic for sending a redshell request
     shell_byte = REDSHELL_BYTE;
     APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
     complete_powerup();
 }
 
 void apply_blueshell_powerup() {
-    // Add the logic for sending a redshell request
     shell_byte = BLUESHELL_BYTE;
     APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
     complete_powerup();
@@ -91,22 +89,20 @@ void apply_banana() {
 void apply_redshell_hazard() {
     active_hazard = true;
     complete_powerup();
-    // Add the logic for sending a redshell hazard
 	t_fsm.state = REDSHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
-	banana_counter = HAZARD_TICKS;
+	hazard_duration = HAZARD_TICKS;
     // Add lights information
 }
 
 void apply_blueshell_hazard() {
     active_hazard = true;
     complete_powerup();
-    // Add the logic for sending a blueshell hazard
 	t_fsm.state = BLUESHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
-	banana_counter = HAZARD_TICKS;
+	hazard_duration = HAZARD_TICKS;
     // Add lights information
 }
 

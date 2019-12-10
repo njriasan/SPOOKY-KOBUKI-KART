@@ -372,10 +372,8 @@ int main(void) {
     if (active_hazard) {
       compare_time = read_timer();
       if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
-        decay_hazard();  
+        decay_hazard(); 
       }
-    } else if (t_fsm.state == BANANA || t_fsm.state == REDSHELL || t_fsm.state == BLUESHELL) {
-      decay_hazard();
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
     } else if (hazard_value == REDSHELL_HAZARD) {
