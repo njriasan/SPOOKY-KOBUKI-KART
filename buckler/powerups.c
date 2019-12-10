@@ -7,18 +7,26 @@
 
 #define MUSHROOM_DECAY_ACC -400
 
-#define MUSHROOM_TICKS 100
+#define MUSHROOM_TICKS 3.0
 
-#define HAZARD_TICKS 200
+#define HAZARD_TICKS 5.0
 
 #define HAZARD_TURN_VELOCITY 400
 
+// Value of the owned powerup/hazard
 uint8_t powerup_value = NO_POWERUP;
 uint8_t hazard_value = NO_HAZARD;
 
+// Whether or not the powerup/hazard is activated
+bool active_powerup = false;
+bool active_hazard = false;
 
-uint16_t powerup_counter = 0;
-uint16_t banana_counter = 0;
+
+double powerup_duration = 0.0;
+double hazard_duration = 0.0;
+uint32_t powerup_starttime = 0;
+uint32_t hazard_starttime = 0;
+uint32_t compare_time = 0;
 
 /*
 	Function used to apply a mushroom powerup. This increases a user's current
@@ -26,13 +34,16 @@ uint16_t banana_counter = 0;
 	decay to the previous max.
 */
 void apply_mushroom() {
+    active_powerup = true;
     v_fsm.state = MUSHROOM;
   	v_fsm.v = POWERUP_VELOCITY_MAX;
   	v_fsm.v_dot = 0.0;
   	v_fsm.v_max = POWERUP_VELOCITY_MAX;
   	v_fsm.t_prev = v_fsm.t_curr;
   	v_fsm.t_curr = read_timer();
-  	powerup_counter = MUSHROOM_TICKS;
+  	powerup_duration = MUSHROOM_TICKS;
+    powerup_starttime = read_timer();
+    // Add light logic here
   	lightup_led(5, 2);
   	nrf_delay_ms(1);
 }
@@ -52,6 +63,7 @@ void apply_blueshell_powerup() {
 }
 
 oid decay_mushroom() {
+    active_powerup = false;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
@@ -65,16 +77,19 @@ oid decay_mushroom() {
 }
 
 void apply_banana() {
+    active_hazard = true;
 	complete_powerup();
 	t_fsm.state = BANANA;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
-	banana_counter = HAZARD_TICKS;
+    hazard_starttime = read_timer();
+	hazard_duration = HAZARD_TICKS;
 	lightup_led(5, 3);
 	nrf_delay_ms(1);
 }
 
 void apply_redshell_hazard() {
+    active_hazard = true;
     complete_powerup();
     // Add the logic for sending a redshell hazard
 	t_fsm.state = REDSHELL;
@@ -85,6 +100,7 @@ void apply_redshell_hazard() {
 }
 
 void apply_blueshell_hazard() {
+    active_hazard = true;
     complete_powerup();
     // Add the logic for sending a blueshell hazard
 	t_fsm.state = BLUESHELL;
@@ -94,22 +110,14 @@ void apply_blueshell_hazard() {
     // Add lights information
 }
 
-void decay_banana() {
-	t_fsm.state = CENTER;
-	hazard_value = NO_HAZARD;
-}
-
-void decay_redshell_hazard() {
-	t_fsm.state = CENTER;
-	hazard_value = NO_HAZARD;
-}
-
-void decay_blueshell_hazard() {
+void decay_hazard() {
+    active_hazard = false;
 	t_fsm.state = CENTER;
 	hazard_value = NO_HAZARD;
 }
 
 void complete_powerup() {
+    active_powerup = false;
 	powerup_counter = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;

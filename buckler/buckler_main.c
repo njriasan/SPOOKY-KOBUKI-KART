@@ -338,42 +338,44 @@ int main(void) {
       timer_prev = timer_curr;
       while (!dwm_request_pos(&spi_instance));
     }
-
-    if (powerup_counter > 0) {
-      powerup_counter--;
-    } else if ((v_fsm.state == MUSHROOM && powerup_counter == 0) || v_fsm.state == MUSHROOM_DECAY) {
-      decay_mushroom();
-    // Add logic for the button press here
-    } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
-      if (powerup_value == MUSHROOM_POWERUP) {
-        apply_mushroom();
-      } else if (powerup_value == REDSHELL_POWERUP) {
-        apply_redshell_powerup();
+    if (!active_hazard) {
+      if (active_powerup) {
+        // Add logic for checking if the powerup has expired
+        compare_time = read_timer();
+        if (get_time_elapsed(powerup_starttime, compare_time) > powerup_duration) {
+          decay_mushroom();  
+        }
+      } else if (v_fsm.state == MUSHROOM_DECAY) {
+        decay_mushroom();
+      // Add logic for the button press here
+      } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+        if (powerup_value == MUSHROOM_POWERUP) {
+          apply_mushroom();
+        } else if (powerup_value == REDSHELL_POWERUP) {
+          apply_redshell_powerup();
+        } else if (powerup_value == BLUESHELL_POWERUP) {
+          apply_blueshell_powerup();
+        }
+      } else if (x_button.value == 1) {
+        // Acclerating
+        on_X_press();
+      } else if (b_button.value == 1) {
+        // Braking/reversing
+        on_B_press();
+      } else if (v_fsm.state == REST) {
+        rest();
+      } else {
+        // Cruising
+        on_button_release();
       }
-      } else if (powerup_value == BLUESHELL_POWERUP) {
-        apply_blueshell_powerup();
+    }
+    if (active_hazard) {
+      compare_time = read_timer();
+      if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
+        decay_hazard();  
       }
-    } else if (x_button.value == 1) {
-	    // Acclerating
-	    on_X_press();
-	  } else if (b_button.value == 1) {
-      // Braking/reversing
-      on_B_press();
-    } else if (v_fsm.state == REST) {
-	    rest();
-	  } else {
-	    // Cruising
-	    on_button_release();
-	  }
-
-    if (banana_counter > 0) {
-      banana_counter--;
-    } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
-      decay_banana();
-    } else if (powerup_counter == 0 && t_fsm.state == REDSHELL) {
-      decay_redshell_hazard();
-    } else if (powerup_counter == 0 && t_fsm.state == BLUESHELL) {
-      decay_blueshell_hazard();
+    } else if (t_fsm.state == BANANA || t_fsm.state == REDSHELL || t_fsm.state == BLUESHELL) {
+      decay_hazard();
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
     } else if (hazard_value == REDSHELL_HAZARD) {
@@ -406,7 +408,6 @@ int main(void) {
   	drive();
     if (shouldPollPos) {
       update_dwm_pos(&spi_instance, location_bytes);
-      printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
       APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
     }
     // lightup_led(5, 1);
