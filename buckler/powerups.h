@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "fsm.h"
 
+extern uint8_t powerup_byte;
+extern uint8_t hazard_byte;
+
 extern uint16_t powerup_counter;
 extern uint16_t banana_counter;
 

@@ -1,6 +1,8 @@
 #include "powerups.h"
 #include "../led/pwm.h"
 
+#include "nrf_delay.h"
+
 #define POWERUP_VELOCITY_MAX 1666.0
 
 #define MUSHROOM_DECAY_ACC -400
@@ -10,6 +12,10 @@
 #define BANANA_TICKS 200
 
 #define BANANA_TURN_VELOCITY 400
+
+uint8_t powerup_byte = 0;
+uint8_t hazard_byte = 0;
+
 
 uint16_t powerup_counter = 0;
 uint16_t banana_counter = 0;
@@ -27,10 +33,12 @@ void apply_mushroom() {
   	v_fsm.t_prev = v_fsm.t_curr;
   	v_fsm.t_curr = read_timer();
   	powerup_counter = MUSHROOM_TICKS;
-  	light_red();
+  	lightup_led(5, 2);
+  	nrf_delay_ms(1);
 }
 
 void decay_mushroom() {
+	powerup_byte = 0;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
@@ -49,17 +57,20 @@ void apply_banana() {
 	t_fsm.v_left = BANANA_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	banana_counter = BANANA_TICKS;
-	light_blue();
+	lightup_led(5, 3);
+	nrf_delay_ms(1);
 }
 
 void decay_banana() {
 	t_fsm.state = CENTER;
+	hazard_byte = 0;
 }
 
 void complete_powerup() {
 	powerup_counter = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
+	powerup_byte = 0;
 	//clear_lights();
 	v_update();
 }

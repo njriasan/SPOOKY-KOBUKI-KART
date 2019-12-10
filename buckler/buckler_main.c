@@ -71,10 +71,8 @@ static simple_ble_char_t controller_char = {.uuid16 = CONTROLLER_UUID};
 static uint16_t controller_bytes;
 
 static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
-static uint8_t powerup_byte;
 
 static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
-static uint8_t hazard_byte;
 
 static simple_ble_char_t location_char = {.uuid16 = 0xeda4};
 static int32_t location_bytes[3];
@@ -290,6 +288,8 @@ int main(void) {
   uint32_t timer_prev = read_timer();
   uint32_t timer_curr;
   bool shouldPollPos = false;
+  lightup_led(5, 1);
+  nrf_delay_ms(1);
   while (1) {
     timer_curr = read_timer();
     // Update location roughly every 1/10 of a second
@@ -298,14 +298,12 @@ int main(void) {
       while (!dwm_request_pos(&spi_instance));
     }
 
-    light_green();
     if (powerup_counter > 0) {
       powerup_counter--;
-    } else if (powerup_byte == 1 && r_button.value == 1 && powerup_counter == 0) {
+    } else if (powerup_byte == 1 && powerup_counter == 0) {
       apply_mushroom();
     } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
       decay_mushroom();
-      light_green();
     } else if (x_button.value == 1) {
 	    // Acclerating
 	    on_X_press();
@@ -321,12 +319,11 @@ int main(void) {
 
     if (banana_counter > 0) {
       banana_counter--;
-    } else if (hazard_byte == 1 && rz_button.value == 1) {
+    } else if (hazard_byte == 1) {
       printf("%s\n", "enters BANANA");
       apply_banana();
     } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
       decay_banana();
-      light_green();
     } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();
@@ -356,7 +353,7 @@ int main(void) {
       printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
       APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
     }
-
+    // lightup_led(5, 1);
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
   	/* May read sensors later. */

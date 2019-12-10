@@ -60,6 +60,7 @@ uint8_t* dwm_tag_init(nrf_drv_spi_t* s) {
   uint8_t size_num[2];
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   while (size_num[0] == 0x00) {
+    printf("%s\n", "Stuck in init loop");
     APP_ERROR_CHECK(err_code);
     if (err_code != NRF_SUCCESS) {
       return NULL;
