@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <wchar.h>
 
 /*
  * Struct used for tracking location information for each node.
@@ -22,6 +23,8 @@ typedef struct connection_node {
     wchar_t *joycon_mac_addr;
     // Mac address of buckler to connect to
     char *buckler_mac_addr;
+    // Readable name for leaderboards/debugging
+    char *readable_name;
     // pid of joycon used to wait on process
     pid_t joycon_input_pid;
     // pid of ble connection process. Used to kill
@@ -48,7 +51,7 @@ typedef struct connection_node {
  * Constructor for a joycon's node. Assumes that the wchar_t
  * is malloced and it now has ownership (and must free it).
  */
-connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr);
+connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr, char *readable_name);
 
 /*
  * Append node to the front of list in place.

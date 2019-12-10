@@ -9,9 +9,9 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <wchar.h>
 #include "connection.h"
 #include "hidapi/hidapi.h"
+#include "location.h"
 #include "read_joycon_input.h"
 
 /*
@@ -28,6 +28,9 @@ const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"7c:bb:8a:9e:3e:8d", "98:b6:e9:71
 
 // List of all MAC addresses for the bucklers (replace me later)
 const char *buckler_mac_addrs[NUM_MAC_ADDRS] = {"c0:98:e5:00:00:11", "c0:98:e5:00:00:12"};
+
+// List of human readable names for each of our Kobukis
+const char *readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right"};
 
 static connection_node_t *unprocessed_macs = NULL;
 static connection_node_t *processed_macs = NULL;
@@ -59,7 +62,7 @@ int main(int argc, char* argv[])
     // Initialize unprocessed_macs
     for (int i = 0; i < NUM_MAC_ADDRS; i++) {
         // Create a node
-        connection_node_t *node = create_node (wide_joycon_mac_addrs[i], buckler_mac_addrs[i]);
+        connection_node_t *node = create_node (wide_joycon_mac_addrs[i], buckler_mac_addrs[i], readable_names[i]);
         // Add the node to the unprocessed list
         append_to_front (&unprocessed_macs, node);
     }
@@ -192,6 +195,10 @@ int main(int argc, char* argv[])
 
         // We want to poll once every second for connections so sleep in the remaining time
         gettimeofday (&end_time, NULL);
+
+        // Print the location of each kobuki currently in use
+        display_locations(processed_macs);
+
         // Calculate how many microseconds are left for operations every second
         // and sleep if any time is remaining
         int time_remaining = SECOND_TO_MICROSECONDS - 

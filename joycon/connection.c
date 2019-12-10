@@ -7,11 +7,12 @@
  * Constructor for a joycon's node. Assumes that the wchar_t
  * is malloced and it now has ownership (and must free it).
  */
-connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr) {
+connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr, char *readable_name) {
     connection_node_t *node = malloc (sizeof (connection_node_t));
     assert (node);
     node->joycon_mac_addr = joycon_mac_addr;
     node->buckler_mac_addr = buckler_mac_addr;
+    node->readable_name = readable_name;
     node->next = NULL;
     node->joycon_input_pid = -1;
     node->ble_output_pid = -1;
