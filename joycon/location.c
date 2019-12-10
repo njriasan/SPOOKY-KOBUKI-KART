@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -56,17 +57,29 @@ void poll_for_location(sn_pair_t *pair) {
         // busy loop til we get a full 12 bytes to avoid
         // an inconsistent state.
         size_t bytes_read = 0;
+        bool location_read = false;
         bool should_read = true;
         int read_amount;
+        uint8_t msg_buffer[13];
         // Read for as long as we don't 12 bytes. Note we are assuming sizeof(location_t) == 12
         // because it should be (and we need it to be since we don't send extra 0s).
         while (should_read) {
             // Read from the socket. Assumes the read is non-blocking
-            while ((read_amount = read(connection_socket, (void *) &int_location, 12 - (bytes_read % 12))) > 0) {
-                if (bytes_read == 12) {
+            while ((read_amount = read(connection_socket, (void *) &msg_buffer, 
+                            13 - (bytes_read % 13))) > 0) {
+                if (bytes_read == 13) {
                     bytes_read = read_amount;
                 } else {
                     bytes_read += read_amount;
+                    if (bytes_read == 13) {
+                        if (msg_buffer[0] == NO_SHELL_REQUEST) {
+                            memcpy(&int_location, &msg_buffer[1], 12);
+                            location_read = true;
+                        } else if (msg_buffer[0] == REDSHELL_REQUEST || 
+                                msg_buffer[0] == BLUESHELL_REQUEST) {
+                           set_shell_request(node, msg_buffer[0]);
+                        }
+                    }
                 }
             }
             // If we read 0 we have disconnected
@@ -75,19 +88,32 @@ void poll_for_location(sn_pair_t *pair) {
                 pthread_exit(NULL);
             // If we read -1 we have nothing to read. This should terminate
             // our read attempts unless we have a partial read completed.
-            } else if (read_amount == -1 && (bytes_read % 12 == 0)) {
+            } else if (read_amount == -1 && (bytes_read % 13 == 0)) {
                 should_read = false;
             }
         }
         // If we read any data update the location
-        if (bytes_read) {
+        if (location_read) {
             location.x = (float) int_location.x_int;
             location.y = (float) int_location.y_int;
             location.z = (float) int_location.z_int;
             printf("Setting the location\n");
             set_location(node, &location);
         }
-       
+
+        // Check if you need to deliver an event
+        uint8_t event_value = get_event_request(node);
+        if (event_value != NO_EVENT) {
+           uint8_t write_result = 0;
+           while ((write_result = write(connection_socket, &event_value, 1)) == -1) {
+               printf("Non-blocking issue with socket\n");
+           }
+           if (write_result == 0) {
+                free(pair);
+                pthread_exit(NULL);
+           }
+        }
+
         // Update the end of the loop 
         gettimeofday(&end_time, NULL);
 

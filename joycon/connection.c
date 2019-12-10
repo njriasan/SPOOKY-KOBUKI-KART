@@ -17,6 +17,8 @@ connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr
     node->joycon_input_pid = -1;
     node->ble_output_pid = -1;
     node->is_valid_location = false;
+    node->shell_request = NO_SHELL_REQUEST;
+    node->event_triggered = NO_EVENT;
     pthread_mutex_init(&node->location_lock, NULL);
     return node;
 }
@@ -75,3 +77,40 @@ bool get_location(connection_node_t *node, location_t *location_ptr) {
     return valid_loc; 
 }
 
+/*
+ * Helper function used to set a shell request.
+ */
+void set_shell_request(connection_node_t *node, uint8_t request_value) {
+    pthread_mutex_lock(&node->location_lock);
+    node->shell_request = request_value;
+    pthread_mutex_unlock(&node->location_lock);
+}
+
+/*
+ * Helper function used to get a shell request.
+ */
+uint8_t get_shell_request(connection_node_t *node) {
+    pthread_mutex_lock(&node->location_lock);
+    uint8_t request_value = node->shell_request;
+    pthread_mutex_unlock(&node->location_lock);
+    return request_value;
+}
+
+/*
+ * Helper function used to set an event for notifying the kobuki.
+ */
+void set_event(connection_node_t *node, uint8_t event_value) {
+    pthread_mutex_lock(&node->location_lock);
+    node->event_triggered = event_value;
+    pthread_mutex_unlock(&node->location_lock);
+}
+
+/*
+ * Helper function used to get an event for notifying the kobuki.
+ */
+uint8_t get_event_request(connection_node_t *node) {
+    pthread_mutex_lock(&node->location_lock);
+    uint8_t event_value = node->event_triggered;
+    pthread_mutex_unlock(&node->location_lock);
+    return event_value;
+}
