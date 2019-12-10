@@ -1,6 +1,10 @@
+#include <assert.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include "location.h"
 
@@ -10,7 +14,9 @@
  * be run as a separate thread for the duration of the connection so
  * it should exit if the read indicates a disconnect.
  */
-void poll_for_location(int socket_fd, connection_node_t *node) {
+void poll_for_location(sn_pair_t *pair) {
+    int server_fd = pair->server_fd;
+    connection_node_t *node = pair->node;
     location_t location;
 
     // Detach the thread so we don't have to handle cleanup
@@ -19,6 +25,12 @@ void poll_for_location(int socket_fd, connection_node_t *node) {
     // Interval at which to poll. This is a heuristic decision about
     // how often we expect to get a location update. 
     const int polling_time = SECOND_TO_MICROSECONDS / 10;
+
+    // Listen for an initial connection
+    assert (server_fd != -1);
+    assert (listen (server_fd, 1) >= 0);
+    int connection_socket = accept (server_fd, NULL, NULL);
+    assert (connection_socket != -1);
 
     // Structs for timing
     struct timeval start_time;
@@ -38,7 +50,7 @@ void poll_for_location(int socket_fd, connection_node_t *node) {
         // because it should be (and we need it to be since we don't send extra 0s).
         while (should_read) {
             // Read from the socket. Assumes the read is non-blocking
-            while ((read_amount = read(socket_fd, (void *) &location,
+            while ((read_amount = read(connection_socket, (void *) &location,
                             12 - (bytes_read % 12)))) {
                 if (bytes_read == 12) {
                     bytes_read = read_amount;
@@ -48,6 +60,7 @@ void poll_for_location(int socket_fd, connection_node_t *node) {
             }
             // If we read 0 we have disconnected
             if (read_amount == 0) {
+                free(pair);
                 pthread_exit(NULL);
             // If we read -1 we have nothing to read. This should terminate
             // our read attempts unless we have a partial read completed.

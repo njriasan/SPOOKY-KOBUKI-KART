@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
                         close (node->pipe_fds[1]);
                         printf ("Forked a new process.\n");
                         // TODO: Add code to move this into a new thread
-                        char *server_num_ptr = (char *) &node->server_port;
+                        char *server_num_ptr = (char *) &node->controller_server_port;
                         int read_size = 0;
                         int curr_read = 0;
                         while (read_size < sizeof (int32_t) && 
@@ -115,8 +115,19 @@ int main(int argc, char* argv[])
                                                    sizeof(int32_t) - read_size) > 0)) {
                             read_size += curr_read;
                         }
-                        close (node->pipe_fds[0]);
-                        node->ble_output_pid = fork ();
+                        close(node->pipe_fds[0]);
+                        // Add code to launch a server for the process manager.
+                        int server_fd = spawn_server (&node->location_server_port);
+                    
+                        // 
+                        sn_pair_t *pair = malloc(sizeof(sn_pair_t));
+                        assert(pair != NULL);
+                        pair->server_fd = server_fd;
+                        pair->node = node;
+                        // Start polling for locations in a new thread
+                        pthread_create(&node->thread, NULL, (void *) &poll_for_location, pair); 
+
+                        node->ble_output_pid = fork();
                         if (node->ble_output_pid == 0) {
                             // Spawned child process
                             char *python_path = "python3";
@@ -124,13 +135,15 @@ int main(int argc, char* argv[])
                             args[0] = python_path;
                             args[1] = "../rpi_ble/send_pkt.py";
                             args[2] = node->buckler_mac_addr;
-                            args[3] = malloc (sizeof(char) * 6);
-                            snprintf (args[3], 6, "%d\n", node->server_port);
-                            args[4] = NULL;
-                            execvp (python_path, args);
-                            perror ("Exec failed.");
+                            args[3] = malloc(sizeof(char) * 6);
+                            snprintf(args[3], 6, "%d\n", node->controller_server_port);
+                            args[4] = malloc(sizeof(char) * 6);
+                            snprintf(args[4], 6, "%d\n", node->location_server_port);
+                            args[5] = NULL;
+                            execvp(python_path, args);
+                            perror("Exec failed.");
                         } else if (node->ble_output_pid < 0) {
-                            perror ("Unable to fork process");
+                            perror("Unable to fork process");
                             break;
                         }
 

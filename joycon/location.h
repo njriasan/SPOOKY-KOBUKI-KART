@@ -5,13 +5,18 @@
 
 #define SECOND_TO_MICROSECONDS 1000000
 
+typedef struct {
+    int server_fd;
+    connection_node_t *node;
+} sn_pair_t;
+
 /*
  * Function that polls for a location information for the socket and
  * if found updates the location inside the node. This is intended to
  * be run as a separate thread for the duration of the connection so
  * it should exit if the read indicates a disconnect.
  */
-void poll_for_location(int socket_fd, connection_node_t *node);
+void poll_for_location(sn_pair_t *pair);
 
 /*
  * Function to display the current locations of all Kobukis. This is a debugging

@@ -30,9 +30,13 @@ typedef struct connection_node {
     // pid of ble connection process. Used to kill
     // or wait on ble process
     pid_t ble_output_pid;
-    // port used by the serve to connect the joycon input
+    // port used by the server to connect the joycon input
     // and ble processes
-    int32_t server_port;
+    int32_t controller_server_port;
+    // port used by the server to transmit location information
+    // to the process_manager as well as by the process_manager
+    // for powerup and hazard info.
+    int32_t location_server_port;
     // ports used to pipe information back from the child joycon process
     // back to the controller to give its server node
     int pipe_fds[2];
@@ -43,6 +47,8 @@ typedef struct connection_node {
     bool is_valid_location;
     // Lock for when multiple thread need to read a location value
     pthread_mutex_t location_lock;
+    // Memory allocated for the thread that will poll for location updates.
+    pthread_t thread;
     // Next info for keeping track of a linked list
     struct connection_node *next;
 } connection_node_t;
