@@ -160,13 +160,19 @@ class Button:
         print(self.return_status())
 
     """
+        Returns if a button is not pressed
+    """
+    def is_not_pressed(self):
+        return str(self.state) == "NOT PRESSED"
+
+    """
         Prints the current status of the button as long as it is not in the 
         NOT PRESSED state.
 
         Returns if the status was printed.
     """
     def display_if_pressed(self):
-        if str(self.state) != "NOT PRESSED":
+        if not self.is_not_pressed():
             self.display_status()
             return True
         return False

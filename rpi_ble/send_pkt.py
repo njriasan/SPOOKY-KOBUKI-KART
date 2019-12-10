@@ -3,6 +3,7 @@ import inspect
 import sys
 import struct
 import time
+from enum import Enum
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
 import argparse
@@ -26,6 +27,14 @@ CHAR_UUIDS = [
     "5607eda3-f65e-4d59-a9ff-84420d87a4ca",
     "5607eda4-f65e-4d59-a9ff-84420d87a4ca",
     ] 
+
+class Powerups(Enum):
+    mushroom = 1
+    redshell = 2
+
+class Hazards(Enum):
+    banana = 1
+    redshell = 2
 
 class RobotDelegate(DefaultDelegate):
     def __init__(self, manager_sock):
@@ -109,8 +118,17 @@ class RobotController():
         print()
         
         self.controller_characteristic.write(self.controller.get_output_message())
-#        self.send_powerup(bytearray([1]))
-#        self.send_hazard(bytearray([1]))
+        # Check if + is pressed. If so deliver the powerup
+        # Also check if home is pressed and if so deliver the hazard
+        for button in self.controller.buttons:
+            if button.name == "+" and not button.is_not_pressed():
+                self.send_powerup(bytearray([Powerup.mushroom]))
+            #elif button.name == "R" and not button.is_not_pressed():
+            #    self.send_powerup(bytearray([Powerup.redshell]))
+            elif button.name == "HOME" and not button.is_not_pressed():
+                self.send_hazard(bytearray([Hazard.banana]))
+            #elif button.name == "RZ" and not button.is_not_pressed():
+            #    self.send_hazard(bytearray([Hazard.redshell]))
 
 
     # Function to send powerup
