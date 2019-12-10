@@ -1,7 +1,18 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
+#include <pthread.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+/*
+ * Struct used for tracking location information for each node.
+ */
+typedef struct {
+    float x;
+    float y;
+    float z;
+} location_t;
 
 /*
  * Struct for keeping track of information for each possible connection.
@@ -22,6 +33,13 @@ typedef struct connection_node {
     // ports used to pipe information back from the child joycon process
     // back to the controller to give its server node
     int pipe_fds[2];
+    // Current location of the kobuki
+    location_t location;
+    // Boolean to indicate if the node has a valid location. This should
+    // only be false on startup or when a node has disconnected
+    bool is_valid_location;
+    // Lock for when multiple thread need to read a location value
+    pthread_mutex_t location_lock;
     // Next info for keeping track of a linked list
     struct connection_node *next;
 } connection_node_t;
@@ -42,5 +60,18 @@ void append_to_front (connection_node_t **list, connection_node_t *node);
  * Removes a node from the list in place. Assumes that node is a shallow copy.
  */
 void remove_node (connection_node_t **list, connection_node_t *node);
+
+/*
+ * Helper function used to set the location inside of a connection node.
+ */
+void set_location(connection_node_t *node, location_t* location_ptr);
+
+/*
+ * Helper function used to get the location inside of a connection node
+ * and place the value inside of location_ptr (which is assumed to contain
+ * allocated memory). Returns whether or not it was successfully able to
+ * update a location.
+ */
+bool get_location(connection_node_t *node, location_t *location_ptr);
 
 #endif

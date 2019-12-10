@@ -177,6 +177,11 @@ int main(int argc, char* argv[])
                     waitpid (node->joycon_input_pid, NULL, 0);
                     connection_node_t *new_node = node->next;
                     remove_node (&processed_macs, node);
+                    // Update the connection thread to indicate that a valid
+                    // location is no longer stored
+                    pthread_mutex_lock(&node->location_lock);
+                    node->is_valid_location = false;
+                    pthread_mutex_unlock(&node->location_lock);
                     append_to_front (&unprocessed_macs, node); 
                     node = new_node;
                 } else {
