@@ -21,7 +21,6 @@
 
 #define NUM_MAC_ADDRS 2
 
-#define SECOND_TO_MICROSECONDS 1000000
 
 // List of all the mac addresses for possible joy con pairings
 const char *joycon_mac_addrs[NUM_MAC_ADDRS] = {"7c:bb:8a:9e:3e:8d", "98:b6:e9:71:62:01"};
@@ -73,6 +72,9 @@ int main(int argc, char* argv[])
     res = hid_init();
     assert (!res);
 
+    // Interval at which to poll. This is a heuristic decision about
+    // how often we expect to get a location update. 
+    const int polling_time = SECOND_TO_MICROSECONDS / 2;
     while (true) {
         struct timeval start_time;
         struct timeval end_time;
@@ -193,25 +195,26 @@ int main(int argc, char* argv[])
             }
         }
 
-        // We want to poll once every second for connections so sleep in the remaining time
-        gettimeofday (&end_time, NULL);
 
         // Print the location of each kobuki currently in use
         display_locations(processed_macs);
 
+        // We want to poll once every second for connections so sleep in the remaining time
+        gettimeofday(&end_time, NULL);
+
         // Calculate how many microseconds are left for operations every second
         // and sleep if any time is remaining
-        int time_remaining = SECOND_TO_MICROSECONDS - 
+        int time_remaining = polling_time - 
             ((end_time.tv_sec - start_time.tv_sec) * SECOND_TO_MICROSECONDS
             + (end_time.tv_usec - start_time.tv_usec));
         if (time_remaining > 0) {
-            usleep (time_remaining);
+            usleep(time_remaining);
         }
     }
 
 	// Finalize the hidapi library
 	res = hid_exit();
-    assert (!res);
+    assert(!res);
 
 	return 1;
 }
