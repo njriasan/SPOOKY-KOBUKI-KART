@@ -8,6 +8,12 @@
 #include <unistd.h>
 #include "location.h"
 
+typedef struct {
+    int32_t x_int;
+    int32_t y_int;
+    int32_t z_int;
+} int_location_t;
+
 /*
  * Function that polls for a location information for the socket and
  * if found updates the location inside the node. This is intended to
@@ -18,6 +24,7 @@ void poll_for_location(sn_pair_t *pair) {
     int server_fd = pair->server_fd;
     connection_node_t *node = pair->node;
     location_t location;
+    int_location_t int_location;
 
     // Detach the thread so we don't have to handle cleanup
     pthread_detach(pthread_self());
@@ -50,7 +57,7 @@ void poll_for_location(sn_pair_t *pair) {
         // because it should be (and we need it to be since we don't send extra 0s).
         while (should_read) {
             // Read from the socket. Assumes the read is non-blocking
-            while ((read_amount = read(connection_socket, (void *) &location,
+            while ((read_amount = read(connection_socket, (void *) &int_location,
                             12 - (bytes_read % 12)))) {
                 if (bytes_read == 12) {
                     bytes_read = read_amount;
@@ -70,6 +77,9 @@ void poll_for_location(sn_pair_t *pair) {
         }
         // If we read any data update the location
         if (bytes_read) {
+            location.x = (float) int_location.x_int;
+            location.y = (float) int_location.y_int;
+            location.z = (float) int_location.z_int;
             set_location(node, &location);
         }
        

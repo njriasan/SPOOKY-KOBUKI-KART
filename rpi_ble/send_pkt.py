@@ -28,13 +28,14 @@ CHAR_UUIDS = [
     ] 
 
 class RobotDelegate(DefaultDelegate):
-    def __init__(self):
+    def __init__(self, manager_sock):
         DefaultDelegate.__init__(self)
+        self.manager_sock = manager_sock
     
     def handleNotification(self, cHandle, data):
-        x_coor = int.from_bytes(data[0:4], "little", signed=True) / 1000.0
-        y_coor = int.from_bytes(data[4:8], "little", signed=True) / 1000.0
-        z_coor = int.from_bytes(data[8:12], "little", signed=True) / 1000.0
+        # Add support for switching on cHandle if multiple notifications are used.
+        assert(len(data) == 12)
+        self.manager_sock.send(data)
 
 class RobotController():
 
@@ -46,9 +47,14 @@ class RobotController():
         self.controller = JoyCon()
         self.controller.display_all_pressed_buttons()
 
+
+        # PUT SOCKET LISTENING CODE FOR LOCATION UPDATES
+        self.manager_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.manager_sock.connect(('localhost', manager_server_port))
+
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
-        self.robot.withDelegate(RobotDelegate())
+        self.robot.withDelegate(RobotDelegate(self.manager_sock))
 
         print("Connected to the robot")
 
@@ -76,10 +82,6 @@ class RobotController():
         self.controller_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.controller_sock.connect(('localhost', controller_server_port))
         self.controller_sock.setblocking(0)
-
-        # PUT SOCKET LISTENING CODE FOR LOCATION UPDATES
-        self.manager_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.manager_sock.connect(('localhost', manager_server_port))
 
     
         self.receive_buttons()
