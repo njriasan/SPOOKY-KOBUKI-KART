@@ -12,10 +12,12 @@ from buttons import JoyCon
 
 parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
 parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
-parser.add_argument('server_port', metavar='P', type=int, help='Port to connect to bluetooth endpoint')
+parser.add_argument('controller_server_port', metavar='P', type=int, help='Port to connect to bluetooth endpoint')
+parser.add_argument('manager_server_port', metavar='P', type=int, help='Port to connect to process_manager')
 args = parser.parse_args()
 addr = args.addr.lower()
-server_port = args.server_port
+controller_server_port = args.controller_server_port
+manager_server_port = args.manager_server_port
 
 SERVICE_UUID = "5607eda0-f65e-4d59-a9ff-84420d87a4ca"
 CHAR_UUIDS = [
@@ -30,15 +32,13 @@ class RobotDelegate(DefaultDelegate):
         DefaultDelegate.__init__(self)
     
     def handleNotification(self, cHandle, data):
-        print("Called")
         x_coor = int.from_bytes(data[0:4], "little", signed=True) / 1000.0
         y_coor = int.from_bytes(data[4:8], "little", signed=True) / 1000.0
         z_coor = int.from_bytes(data[8:12], "little", signed=True) / 1000.0
-        print ("Coordinates are: {} {} {}".format(x_coor, y_coor, z_coor))
 
 class RobotController():
 
-    def __init__(self, address, server_port):
+    def __init__(self, address, controller_server_port, manager_server_port):
 
                         
 
@@ -73,9 +73,13 @@ class RobotController():
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(('localhost', server_port))
-        self.sock.setblocking(0)
+        self.controller_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.controller_sock.connect(('localhost', controller_server_port))
+        self.controller_sock.setblocking(0)
+
+        # PUT SOCKET LISTENING CODE FOR LOCATION UPDATES
+        self.manager_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.manager_sock.connect(('localhost', manager_server_port))
 
     
         self.receive_buttons()
@@ -83,7 +87,7 @@ class RobotController():
     def receive_buttons(self):
         while True:
             try:
-                pkt = self.sock.recv(12)
+                pkt = self.controller_sock.recv(12)
                 self.on_pkt_receive(pkt)
             except socket.error:
                 # If we send a packet we may receive notifications as
@@ -121,5 +125,5 @@ class RobotController():
     def __exit__(self, exc_type, exc_value, traceback):
         self.robot.disconnect()
 
-with RobotController(addr, server_port) as robot:
+with RobotController(addr, controller_server_port, manager_server_port) as robot:
     getpass('Use arrow keys to control robot')
