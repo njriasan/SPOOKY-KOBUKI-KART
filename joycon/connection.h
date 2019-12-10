@@ -113,6 +113,12 @@ void set_shell_request(connection_node_t *node, uint8_t request_value);
 uint8_t get_shell_request(connection_node_t *node);
 
 /*
+ * Helper function used to get a shell request.
+ * It also resets the shell_request to NO_SHELL_REQUEST.
+ */
+uint8_t get_shell_request_reset(connection_node_t *node);
+
+/*
  * Helper function used to set an event for notifying the kobuki.
  */
 void set_event(connection_node_t *node, uint8_t event_value);
@@ -121,4 +127,11 @@ void set_event(connection_node_t *node, uint8_t event_value);
  * Helper function used to get an event for notifying the kobuki.
  */
 uint8_t get_event_request(connection_node_t *node);
+
+/*
+ * Helper function used to get an event for notifying the kobuki.
+ * It also resets the event_triggered to NO_EVENT
+ */
+uint8_t get_event_request_reset(connection_node_t *node);
+
 #endif

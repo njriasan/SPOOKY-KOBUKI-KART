@@ -97,6 +97,18 @@ uint8_t get_shell_request(connection_node_t *node) {
 }
 
 /*
+ * Helper function used to get a shell request.
+ * It also resets the shell_request to NO_SHELL_REQUEST.
+ */
+uint8_t get_shell_request_reset(connection_node_t *node) {
+    pthread_mutex_lock(&node->location_lock);
+    uint8_t request_value = node->shell_request;
+    node->shell_request = NO_SHELL_REQUEST;
+    pthread_mutex_unlock(&node->location_lock);
+    return request_value;
+}
+
+/*
  * Helper function used to set an event for notifying the kobuki.
  */
 void set_event(connection_node_t *node, uint8_t event_value) {
@@ -111,6 +123,18 @@ void set_event(connection_node_t *node, uint8_t event_value) {
 uint8_t get_event_request(connection_node_t *node) {
     pthread_mutex_lock(&node->location_lock);
     uint8_t event_value = node->event_triggered;
+    pthread_mutex_unlock(&node->location_lock);
+    return event_value;
+}
+
+/*
+ * Helper function used to get an event for notifying the kobuki.
+ * It also resets the event_triggered to NO_EVENT
+ */
+uint8_t get_event_request_reset(connection_node_t *node) {
+    pthread_mutex_lock(&node->location_lock);
+    uint8_t event_value = node->event_triggered;
+    node->event_triggered = NO_EVENT;
     pthread_mutex_unlock(&node->location_lock);
     return event_value;
 }
