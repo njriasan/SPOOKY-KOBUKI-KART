@@ -13,8 +13,8 @@
 
 #define BANANA_TURN_VELOCITY 400
 
-uint8_t powerup_byte = 0;
-uint8_t hazard_byte = 0;
+uint8_t powerup_value = NO_POWERUP;
+uint8_t hazard_value = NO_HAZARD;
 
 
 uint16_t powerup_counter = 0;
@@ -38,7 +38,6 @@ void apply_mushroom() {
 }
 
 void decay_mushroom() {
-	powerup_byte = 0;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
@@ -48,10 +47,10 @@ void decay_mushroom() {
 	} else {
 		v_update();
 	}
+	powerup_byte = NO_POWERUP;
 }
 
 void apply_banana() {
-	printf("%s\n", "here in banana function");
 	complete_powerup();
 	t_fsm.state = BANANA;
 	t_fsm.v_left = BANANA_TURN_VELOCITY;
@@ -63,14 +62,14 @@ void apply_banana() {
 
 void decay_banana() {
 	t_fsm.state = CENTER;
-	hazard_byte = 0;
+	hazard_value = NO_HAZARD;
 }
 
 void complete_powerup() {
 	powerup_counter = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
-	powerup_byte = 0;
+	powerup_value = NO_POWERUP;
 	//clear_lights();
 	v_update();
 }
