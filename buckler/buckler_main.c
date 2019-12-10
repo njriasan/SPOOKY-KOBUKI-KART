@@ -335,9 +335,11 @@ int main(void) {
     } else if ((v_fsm.state == MUSHROOM && powerup_counter == 0) || v_fsm.state == MUSHROOM_DECAY) {
       decay_mushroom();
     // Add logic for the button press here
-    } else if (powerup_byte != NO_POWERUP && sr_button.value == 1) {
-      if (powerup_byte == MUSHROOM_POWERUP) {
+    } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+      if (powerup_value == MUSHROOM_POWERUP) {
         apply_mushroom();
+      } else if (powerup_value == REDSHELL_POWERUP) {
+        apply_redshell_powerup();
       }
     } else if (x_button.value == 1) {
 	    // Acclerating
@@ -358,6 +360,8 @@ int main(void) {
       decay_banana();
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
+    } else if (hazard_value == REDSHELL_HAZARD) {
+      apply_redshell_hazard();
     } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();

@@ -37,6 +37,13 @@ void apply_mushroom() {
   	nrf_delay_ms(1);
 }
 
+void apply_redshell_powerup() {
+    // Add the logic for sending a redshell request
+
+    complete_powerup();
+}
+
+
 void decay_mushroom() {
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
@@ -58,6 +65,11 @@ void apply_banana() {
 	banana_counter = BANANA_TICKS;
 	lightup_led(5, 3);
 	nrf_delay_ms(1);
+}
+
+void apply_redshell_hazard() {
+    complete_powerup();
+    // Add the logic for sending a redshell hazard
 }
 
 void decay_banana() {
