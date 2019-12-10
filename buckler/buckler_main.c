@@ -37,9 +37,11 @@
 #include "powerups.h"
 #include "pwm.h"
 
-#define NUM_BUTTONS 5
+#define NUM_BUTTONS 4
 
 void controller_evt_write();
+void powerup_evt_write();
+void hazard_evt_write();
 
 
 // I2C manager
@@ -68,16 +70,21 @@ static simple_ble_service_t robot_service = {{
 // TODO: Declare control characteristic and variable for our service
 #define CONTROLLER_UUID 0xeda1
 static simple_ble_char_t controller_char = {.uuid16 = CONTROLLER_UUID};
-static uint16_t controller_bytes;
+static uint16_t controller_bytes = 0;
 
+#define POWERUP_UUID 0xeda2
 static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
-static uint8_t powerup_byte;
+static uint8_t powerup_byte = NO_POWERUP;
 
+#define HAZARD_UUID 0xeda3
 static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
-static uint8_t hazard_byte;
+static uint8_t hazard_byte = NO_HAZARD;
 
 static simple_ble_char_t location_char = {.uuid16 = 0xeda4};
-static int32_t location_bytes[3];
+static int32_t location_bytes[3] = {0, 0, 0};
+
+simple_ble_char_t shell_char = {.uuid16 = 0xeda5};
+uint8_t shell_byte = NO_SHELL_BYTE;
 
 simple_ble_app_t* simple_ble_app;
 
@@ -92,16 +99,26 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t r_button = {"r", 0b1 << 5, 5, 0};
-static button_info_t rz_button = {"rz", 0b1 << 4, 4, 0};
+static button_info_t sr_button = {"SR", 0b1 << 6 , 6, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &r_button, &rz_button, &stick_push_button};
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &sr_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
   switch (p_ble_evt->evt.gatts_evt.params.write.uuid.uuid) {
-    case (CONTROLLER_UUID): {
+    case (CONTROLLER_UUID): 
+    {
       controller_evt_write();
+      break;
+    }
+    case (POWERUP_UUID): 
+    {
+      powerup_evt_write();
+      break;
+    }
+    case (HAZARD_UUID):
+    {
+      hazard_evt_write();
       break;
     }
     default: {
@@ -111,14 +128,31 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
 }
 
 void controller_evt_write() {
-  //printf("%x\n", stick_push_button.value);
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
   }
-  //uint8_t *bytes_look = (uint8_t *) &controller_bytes;printf("%x %x\n", bytes_look[0], bytes_look[1]);
-  //printf("\n\n");
-  //printf("%x\n", rz_button.value);
+  controller_bytes = 0;
+}
 
+// Update the powerup value only if there is no existing powerup
+void powerup_evt_write() {
+  if (powerup_value == NO_POWERUP) {
+    if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
+      powerup_value = powerup_byte;
+      // Add information about setting the lights
+    }
+  }
+  powerup_byte = NO_POWERUP;
+}
+
+// Update the hazard value only if there is no existing hazard
+void hazard_evt_write() {
+  if (hazard_value == NO_HAZARD) {
+    if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
+      hazard_value = hazard_byte;
+    }
+  }
+  hazard_byte = NO_HAZARD;
 }
 
 void print_velocity_state(velocity_states current_state){
@@ -219,6 +253,11 @@ int main(void) {
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
       sizeof(location_bytes), (uint8_t*)location_bytes,
       &robot_service, &location_char);
+
+  // Characteristic for location sending
+  simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
+      sizeof(shell_byte), (uint8_t*)shell_byte,
+      &robot_service, &shell_char);
   
   // Start Advertising
   simple_ble_adv_only_name();
@@ -289,45 +328,60 @@ int main(void) {
   // loop forever, running state machine
   uint32_t timer_prev = read_timer();
   uint32_t timer_curr;
+  bool shouldPollPos = false;
+  lightup_led(5, 1);
+  nrf_delay_ms(1);
   while (1) {
     timer_curr = read_timer();
     // Update location roughly every 1/10 of a second
-    if (get_time_elapsed (timer_prev, timer_curr) > 0.1) {
+    if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.1)) {
       timer_prev = timer_curr;
-      update_dwm_pos(&spi_instance, location_bytes);
-      printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
-      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
+      while (!dwm_request_pos(&spi_instance));
     }
-
-    light_green();
-    if (powerup_counter > 0) {
-      powerup_counter--;
-    } else if (powerup_byte == 1 && r_button.value == 1 && powerup_counter == 0) {
-      apply_mushroom();
-    } else if (v_fsm.state == MUSHROOM || v_fsm.state == MUSHROOM_DECAY) {
-      decay_mushroom();
-      light_green();
-    } else if (x_button.value == 1) {
-	    // Acclerating
-	    on_X_press();
-	  } else if (b_button.value == 1) {
-      // Braking/reversing
-      on_B_press();
-    } else if (v_fsm.state == REST) {
-	    rest();
-	  } else {
-	    // Cruising
-	    on_button_release();
-	  }
-
-    if (banana_counter > 0) {
-      banana_counter--;
-    } else if (hazard_byte == 1 && rz_button.value == 1) {
-      printf("%s\n", "enters BANANA");
+    if (!active_hazard) {
+      if (active_powerup) {
+        // Add logic for checking if the powerup has expired
+        compare_time = read_timer();
+        if (get_time_elapsed(powerup_starttime, compare_time) > powerup_duration) {
+          decay_mushroom();  
+        }
+      } else if (v_fsm.state == MUSHROOM_DECAY) {
+        decay_mushroom();
+      // Add logic for the button press here
+      } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+        if (powerup_value == MUSHROOM_POWERUP) {
+          apply_mushroom();
+        } else if (powerup_value == REDSHELL_POWERUP) {
+          apply_redshell_powerup();
+        } else if (powerup_value == BLUESHELL_POWERUP) {
+          apply_blueshell_powerup();
+        }
+      } else if (x_button.value == 1) {
+        // Acclerating
+        on_X_press();
+      } else if (b_button.value == 1) {
+        // Braking/reversing
+        on_B_press();
+      } else if (v_fsm.state == REST) {
+        rest();
+      } else {
+        // Cruising
+        on_button_release();
+      }
+    }
+    if (active_hazard) {
+      compare_time = read_timer();
+      if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
+        decay_hazard();  
+      }
+    } else if (t_fsm.state == BANANA || t_fsm.state == REDSHELL || t_fsm.state == BLUESHELL) {
+      decay_hazard();
+    } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
-    } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
-      decay_banana();
-      light_green();
+    } else if (hazard_value == REDSHELL_HAZARD) {
+      apply_redshell_hazard();
+    } else if (hazard_value == BLUESHELL_HAZARD) {
+      apply_blueshell_hazard();
     } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();
@@ -352,8 +406,11 @@ int main(void) {
 	  }
   	// Drive the Kobuki
   	drive();
-
-
+    if (shouldPollPos) {
+      update_dwm_pos(&spi_instance, location_bytes);
+      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
+    }
+    // lightup_led(5, 1);
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
   	/* May read sensors later. */

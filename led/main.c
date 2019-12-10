@@ -2,19 +2,18 @@
 #include "nrf_drv_pwm.h"
 #include "nrf_delay.h"
 
-
-#define NUM_LEDS 7
-
 int main(void) {
     /* Define PWM duty cycle sequence */
 	pwm_init();
+	lightup_led(5, 1);
 	while (1) {
-		light_green();
-		nrf_delay_ms(1000);
-		light_blue();
-		nrf_delay_ms(1000);
-		light_red();
-		nrf_delay_ms(1000);
-		// clear_lights0);
+		// lightup_led(5, 1);
+		// nrf_delay_ms(1000);
+		// lightup_led(5, 2);
+		// // nrf_delay_ms(1000);
+		// lightup_led(5, 3);
+		// // nrf_delay_ms(1000);
+		// lightup_led(5, 0);
+		// nrf_delay_ms(1000);
 	}
 }
