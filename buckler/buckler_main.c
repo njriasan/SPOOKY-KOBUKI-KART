@@ -289,14 +289,13 @@ int main(void) {
   // loop forever, running state machine
   uint32_t timer_prev = read_timer();
   uint32_t timer_curr;
+  bool shouldPollPos = false;
   while (1) {
     timer_curr = read_timer();
     // Update location roughly every 1/10 of a second
-    if (get_time_elapsed (timer_prev, timer_curr) > 0.1) {
+    if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.1)) {
       timer_prev = timer_curr;
-      update_dwm_pos(&spi_instance, location_bytes);
-      printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
-      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
+      while (!dwm_request_pos(&spi_instance));
     }
 
     light_green();
@@ -352,7 +351,11 @@ int main(void) {
 	  }
   	// Drive the Kobuki
   	drive();
-
+    if (shouldPollPos) {
+      update_dwm_pos(&spi_instance, location_bytes);
+      printf("Coordinates out: (%f, %f, %f)\n", location_bytes[0] / 1000.0, location_bytes[1] / 1000.0, location_bytes[2] / 1000.0);
+      APP_ERROR_CHECK(simple_ble_notify_char(&location_char));
+    }
 
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
