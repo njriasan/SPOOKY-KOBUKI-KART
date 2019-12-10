@@ -83,6 +83,9 @@ static uint8_t hazard_byte = NO_HAZARD;
 static simple_ble_char_t location_char = {.uuid16 = 0xeda4};
 static int32_t location_bytes[3] = {0, 0, 0};
 
+simple_ble_char_t shell_char = {.uuid16 = 0xeda5};
+uint8_t shell_byte = NO_SHELL_BYTE;
+
 simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
@@ -134,8 +137,9 @@ void controller_evt_write() {
 // Update the powerup value only if there is no existing powerup
 void powerup_evt_write() {
   if (powerup_value == NO_POWERUP) {
-    if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP) {
+    if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
       powerup_value = powerup_byte;
+      // Add information about setting the lights
     }
   }
   powerup_byte = NO_POWERUP;
@@ -144,7 +148,7 @@ void powerup_evt_write() {
 // Update the hazard value only if there is no existing hazard
 void hazard_evt_write() {
   if (hazard_value == NO_HAZARD) {
-    if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD) {
+    if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
     }
   }
@@ -249,6 +253,11 @@ int main(void) {
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
       sizeof(location_bytes), (uint8_t*)location_bytes,
       &robot_service, &location_char);
+
+  // Characteristic for location sending
+  simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
+      sizeof(shell_byte), (uint8_t*)shell_byte,
+      &robot_service, &shell_char);
   
   // Start Advertising
   simple_ble_adv_only_name();
@@ -341,6 +350,9 @@ int main(void) {
       } else if (powerup_value == REDSHELL_POWERUP) {
         apply_redshell_powerup();
       }
+      } else if (powerup_value == BLUESHELL_POWERUP) {
+        apply_blueshell_powerup();
+      }
     } else if (x_button.value == 1) {
 	    // Acclerating
 	    on_X_press();
@@ -358,10 +370,16 @@ int main(void) {
       banana_counter--;
     } else if (powerup_counter == 0 && t_fsm.state == BANANA) {
       decay_banana();
+    } else if (powerup_counter == 0 && t_fsm.state == REDSHELL) {
+      decay_redshell_hazard();
+    } else if (powerup_counter == 0 && t_fsm.state == BLUESHELL) {
+      decay_blueshell_hazard();
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
     } else if (hazard_value == REDSHELL_HAZARD) {
       apply_redshell_hazard();
+    } else if (hazard_value == BLUESHELL_HAZARD) {
+      apply_blueshell_hazard();
     } else if (stick_push_button.value == 6) {
 	    // Turning left
 	    on_l_stick_press();

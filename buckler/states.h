@@ -21,7 +21,9 @@ typedef enum {
 	RIGHT,
 	RIGHT_UP,
 	RIGHT_DOWN,
-	BANANA
+	BANANA,
+    REDSHELL,
+    BLUESHELL
 } turning_states;
 
 #endif /* STATES_H_ */

@@ -9,9 +9,9 @@
 
 #define MUSHROOM_TICKS 100
 
-#define BANANA_TICKS 200
+#define HAZARD_TICKS 200
 
-#define BANANA_TURN_VELOCITY 400
+#define HAZARD_TURN_VELOCITY 400
 
 uint8_t powerup_value = NO_POWERUP;
 uint8_t hazard_value = NO_HAZARD;
@@ -39,12 +39,19 @@ void apply_mushroom() {
 
 void apply_redshell_powerup() {
     // Add the logic for sending a redshell request
-
+    shell_byte = REDSHELL_BYTE;
+    APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
     complete_powerup();
 }
 
+void apply_blueshell_powerup() {
+    // Add the logic for sending a redshell request
+    shell_byte = BLUESHELL_BYTE;
+    APP_ERROR_CHECK(simple_ble_notify_char(&shell_char));
+    complete_powerup();
+}
 
-void decay_mushroom() {
+oid decay_mushroom() {
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
@@ -60,9 +67,9 @@ void decay_mushroom() {
 void apply_banana() {
 	complete_powerup();
 	t_fsm.state = BANANA;
-	t_fsm.v_left = BANANA_TURN_VELOCITY;
+	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
-	banana_counter = BANANA_TICKS;
+	banana_counter = HAZARD_TICKS;
 	lightup_led(5, 3);
 	nrf_delay_ms(1);
 }
@@ -70,9 +77,34 @@ void apply_banana() {
 void apply_redshell_hazard() {
     complete_powerup();
     // Add the logic for sending a redshell hazard
+	t_fsm.state = REDSHELL;
+	t_fsm.v_left = HAZARD_TURN_VELOCITY;
+	t_fsm.v_right = 0.0;
+	banana_counter = HAZARD_TICKS;
+    // Add lights information
+}
+
+void apply_blueshell_hazard() {
+    complete_powerup();
+    // Add the logic for sending a blueshell hazard
+	t_fsm.state = BLUESHELL;
+	t_fsm.v_left = HAZARD_TURN_VELOCITY;
+	t_fsm.v_right = 0.0;
+	banana_counter = HAZARD_TICKS;
+    // Add lights information
 }
 
 void decay_banana() {
+	t_fsm.state = CENTER;
+	hazard_value = NO_HAZARD;
+}
+
+void decay_redshell_hazard() {
+	t_fsm.state = CENTER;
+	hazard_value = NO_HAZARD;
+}
+
+void decay_blueshell_hazard() {
 	t_fsm.state = CENTER;
 	hazard_value = NO_HAZARD;
 }
