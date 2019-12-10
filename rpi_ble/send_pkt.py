@@ -26,25 +26,52 @@ CHAR_UUIDS = [
     "5607eda2-f65e-4d59-a9ff-84420d87a4ca",
     "5607eda3-f65e-4d59-a9ff-84420d87a4ca",
     "5607eda4-f65e-4d59-a9ff-84420d87a4ca",
+    "5607eda5-f65e-4d59-a9ff-84420d87a4ca",
     ] 
 
 class Powerups(IntEnum):
     mushroom = 1
     redshell = 2
+    blueshell = 3
 
 class Hazards(IntEnum):
     banana = 1
     redshell = 2
+    blueshell = 3
+
+class ShellValues(IntEnum):
+    redshell = 1
+    blueshell = 2
 
 class RobotDelegate(DefaultDelegate):
-    def __init__(self, manager_sock):
+    def __init__(self, manager_sock, location_handle, shell_handle):
         DefaultDelegate.__init__(self)
         self.manager_sock = manager_sock
+        self.location_handle = location_handle
+        self.shell_handle = shell_handle
     
     def handleNotification(self, cHandle, data):
         # Add support for switching on cHandle if multiple notifications are used.
-        assert(len(data) == 12)
-        self.manager_sock.send(data)
+        if cHandle == self.location_handle:
+            assert(len(data) == 12)
+            # Compose a new 13 byte message with a leading 0 and then the location
+            # 12 bytes after
+            total_data = bytearray([0]) + data
+            assert(len(total_data) == 13)
+            self.manager_sock.send(total_data)
+        elif cHandle == self.shell_handle:
+            assert(len(data) == 1)
+            # Compose a new 13 byte message with a leading shell value and then
+            # 12 0s. Only send a message if it is a valid shell value
+            shell_value = int.from_bytes(data, byteorder='little')
+            if shell_value == ShellValues.redshell.value or shell_value == ShellValues.blueshell.value:
+                zeros = [0 for i in range(12)]
+                total_data = data + bytearray(zeros)
+                assert(len(total_data) == 13)
+                self.manager_sock.send(total_data)
+
+            
+            
 
 class RobotController():
 
@@ -69,7 +96,6 @@ class RobotController():
 
         # robot refers to buckler, our peripheral
         self.robot = Peripheral(addr)
-        self.robot.withDelegate(RobotDelegate(self.manager_sock))
 
         print("Connected to the robot")
 
@@ -77,20 +103,29 @@ class RobotController():
         # get service from robot
         self.sv = self.robot.getServiceByUUID(SERVICE_UUID)
 
-        # get controller characteristic from robot
+        # get controller characteristic from the robot
         self.controller_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[0])[0]
 	
-	# get powerup characteristic from robot
+	# get powerup characteristic from the robot
         self.powerup_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[1])[0]
 
-	# get hazard characteristic from robot
+	# get hazard characteristic from the robot
         self.hazard_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[2])[0]
 
-        # get location updates from robot
+        # get location updates from the robot
         self.location_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[3])[0]
-        # Code for subscribing to the
-        handle = self.location_characteristic.valHandle
+
+        # get shell requests from the robot
+        self.shell_characteristic = self.sv.getCharacteristics(CHAR_UUIDS[4])[0]
+
+        # Code for subscribing to the notifications
+        location_handle = self.location_characteristic.valHandle
         self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
+
+        shell_handle = self.location_characteristic.valHandle
+        self.robot.writeCharacteristic(handle + 1, b"\x01\x00")
+
+        self.robot.withDelegate(RobotDelegate(self.manager_sock, location_handle, shell_handle))
 
         # PUT SOCKET LISTENING CODE HERE
         # will call on_pkt_receive
