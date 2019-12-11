@@ -43,8 +43,6 @@ void apply_mushroom() {
   	v_fsm.t_curr = read_timer();
   	powerup_duration = MUSHROOM_TICKS;
     powerup_starttime = read_timer();
-    // Add light logic here
-    printf("%s\n", "mushroom applied");
 }
 
 void apply_redshell_powerup() {
@@ -90,7 +88,6 @@ void apply_redshell_hazard() {
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	hazard_duration = HAZARD_TICKS;
-    // Add lights information
 }
 
 void apply_blueshell_hazard() {
@@ -100,7 +97,6 @@ void apply_blueshell_hazard() {
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
 	hazard_duration = HAZARD_TICKS;
-    // Add lights information
 }
 
 void decay_hazard() {
