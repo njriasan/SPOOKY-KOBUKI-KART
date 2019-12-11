@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "states.h"
 
+#define ACCELERATION 800
 #define BASE_VELOCITY_MAX 1300.0
 
 // Helper function for tracking time differences

@@ -99,10 +99,10 @@ typedef struct {
 
 static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t sr_button = {"SR", 0b1 << 6 , 6, 0};
+static button_info_t rz_button = {"RZ", 0b1 << 4 , 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &sr_button, &stick_push_button};
+static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
   switch (p_ble_evt->evt.gatts_evt.params.write.uuid.uuid) {
@@ -355,7 +355,7 @@ int main(void) {
         decay_mushroom();
         // nrf_delay_ms(100);
       // Add logic for the button press here
-      } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+      } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
         printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();

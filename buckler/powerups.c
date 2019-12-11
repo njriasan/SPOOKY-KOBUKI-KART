@@ -123,6 +123,7 @@ void complete_powerup() {
 	powerup_duration = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
+  v_fsm.v_dot = ACCELERATION;
 	//clear_lights();
 	v_update();
 }
