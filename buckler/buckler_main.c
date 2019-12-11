@@ -256,7 +256,7 @@ int main(void) {
 
   // Characteristic for location sending
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
-      sizeof(shell_byte), (uint8_t*)shell_byte,
+      sizeof(shell_byte), (uint8_t*)&shell_byte,
       &robot_service, &shell_char);
   
   // Start Advertising
@@ -329,9 +329,12 @@ int main(void) {
   uint32_t timer_prev = read_timer();
   uint32_t timer_curr;
   bool shouldPollPos = false;
-  lightup_led(5, 1);
-  nrf_delay_ms(1);
+  lightup_led(7, 1);
+  nrf_delay_ms(100);
   while (1) {
+    lightup_led(7, 0);
+    // lightup_led(7, 2);
+    // nrf_delay_ms(10);
     timer_curr = read_timer();
     // Update location roughly every 1/10 of a second
     if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.1)) {
@@ -349,8 +352,11 @@ int main(void) {
         decay_mushroom();
       // Add logic for the button press here
       } else if (powerup_value != NO_POWERUP && sr_button.value == 1) {
+        printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();
+          lightup_led(7, 2);
+          // nrf_delay_ms(100);
         } else if (powerup_value == REDSHELL_POWERUP) {
           apply_redshell_powerup();
         } else if (powerup_value == BLUESHELL_POWERUP) {

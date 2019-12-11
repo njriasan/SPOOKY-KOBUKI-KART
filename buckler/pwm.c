@@ -108,11 +108,10 @@ void lightup_led(uint32_t num_leds, uint32_t color_id) {
     for (uint32_t led_num = 0; led_num < num_leds; led_num++) {
         for (int i = 0; i < 24; i++) {
             values[led_num * 24 + i] = color_values[i];
-            printf("%d\n", i);
         }
     }
-    values[24 * num_leds] = 100;
-    values[24 * num_leds + 1] = 100;
+    values[24 * num_leds] = 1000;
+    values[24 * num_leds + 1] = 1000;
 
     pwm_lightup(values, NRF_PWM_VALUES_LENGTH(values));
 }

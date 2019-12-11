@@ -44,8 +44,7 @@ void apply_mushroom() {
   	powerup_duration = MUSHROOM_TICKS;
     powerup_starttime = read_timer();
     // Add light logic here
-  	lightup_led(5, 2);
-  	nrf_delay_ms(1);
+    printf("%s\n", "mushroom applied");
 }
 
 void apply_redshell_powerup() {
@@ -60,7 +59,7 @@ void apply_blueshell_powerup() {
     complete_powerup();
 }
 
-oid decay_mushroom() {
+void decay_mushroom() {
     active_powerup = false;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
@@ -71,7 +70,7 @@ oid decay_mushroom() {
 	} else {
 		v_update();
 	}
-	powerup_byte = NO_POWERUP;
+	powerup_value = NO_POWERUP;
 }
 
 void apply_banana() {
@@ -82,8 +81,6 @@ void apply_banana() {
 	t_fsm.v_right = 0.0;
     hazard_starttime = read_timer();
 	hazard_duration = HAZARD_TICKS;
-	lightup_led(5, 3);
-	nrf_delay_ms(1);
 }
 
 void apply_redshell_hazard() {
@@ -110,11 +107,12 @@ void decay_hazard() {
     active_hazard = false;
 	t_fsm.state = CENTER;
 	hazard_value = NO_HAZARD;
+	hazard_duration = 0;
 }
 
 void complete_powerup() {
     active_powerup = false;
-	powerup_counter = 0;
+	powerup_duration = 0;
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
 	powerup_value = NO_POWERUP;
