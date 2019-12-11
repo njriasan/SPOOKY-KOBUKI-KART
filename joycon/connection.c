@@ -111,7 +111,7 @@ uint8_t get_shell_request_reset(connection_node_t *node) {
 /*
  * Helper function used to set an event for notifying the kobuki.
  */
-void set_event(connection_node_t *node, uint8_t event_value) {
+void set_event_request(connection_node_t *node, uint8_t event_value) {
     pthread_mutex_lock(&node->location_lock);
     node->event_triggered = event_value;
     pthread_mutex_unlock(&node->location_lock);

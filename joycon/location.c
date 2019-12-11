@@ -133,12 +133,39 @@ typedef struct {
     location_t location;
 } kobuki_info_t;
 
+
+/*
+ * Helper function to select the leading kobuki.
+ */
+connection_node_t *get_leading_kobuki(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
+    // FIXME
+    return in_play_kobukis[0].kobuki_node;
+}
+
+/*
+ * Helper function to select which kobuki is closest .
+ */
+connection_node_t *get_closest_kobuki(kobuki_info_t *in_play_kobukis, size_t num_kobukis, 
+        size_t requesting_index) {
+    // FIXME
+    return NULL;
+}
+
 /*
  * Helper function to select which kobuki is hit by a redshell and then hit
  * that Kobuki.
  */
-void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
-
+void assign_redshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
+    connection_node_t *closest = get_closest_kobuki (in_play_kobukis, num_kobukis, requesting_index);
+    // If there is no closest Kobuki then do nothing
+    if (closest != NULL) {
+        // Check if there is an existing hazard, if so ignore this hazard
+        uint8_t existing_event = get_event_request(closest);
+        if (existing_event != BANANA_HAZARD && existing_event != REDSHELL_HAZARD
+               && existing_event != BLUESHELL_HAZARD) {
+            set_event_request(closest, REDSHELL_HAZARD);
+        } 
+    }
 }
 
 /*
@@ -146,7 +173,14 @@ void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t
  * that Kobuki.
  */
 void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
-
+    if (num_kobukis != 0) {
+        connection_node_t *leader = get_leading_kobuki (in_play_kobukis, num_kobukis);
+        uint8_t existing_event = get_event_request(leader);
+        if (existing_event != BANANA_HAZARD && existing_event != REDSHELL_HAZARD
+               && existing_event != BLUESHELL_HAZARD) {
+            set_event_request(leader, BLUESHELL_HAZARD);
+        } 
+    }
 }
 
 /*
@@ -157,7 +191,7 @@ void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
     for (size_t i = 0; i < num_kobukis; i++) {
         connection_node_t *node = in_play_kobukis[i].kobuki_node;
         uint8_t shell_request = get_shell_request(node);
-        if (shell_reqeuest == REDSHELL_REQUEST) {
+        if (shell_request == REDSHELL_REQUEST) {
             assign_blueshell(in_play_kobukis, num_kobukis, i);
         } else if (shell_request == BLUESHELL_REQUEST) {
             assign_blueshell(in_play_kobukis, num_kobukis, i); 
@@ -178,7 +212,7 @@ void assign_track_events(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
 void generate_leaderboard(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
     // Fill in code to generate rankings based on the map layout
     for (size_t i = 0; i < num_kobukis; i++) {
-        printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", in_play_kobukis[i],kobuki_node->readable_name,
+        printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", in_play_kobukis[i].kobuki_node->readable_name,
                 in_play_kobukis[i].location.x, in_play_kobukis[i].location.y, in_play_kobukis[i].location.z);
     }
 }
