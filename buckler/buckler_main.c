@@ -350,6 +350,8 @@ int main(void) {
           //printf("%s\n", "powerup ended");
           //lightup_led(7, 0);  
           //nrf_delay_ms(100);
+        } else {
+          v_fsm.t_curr = read_timer();
         }
       } else if (v_fsm.state == MUSHROOM_DECAY) {
         decay_mushroom();
@@ -366,6 +368,9 @@ int main(void) {
           apply_blueshell_powerup();
         }
       } else if (x_button.value == 1) {
+        if (v_fsm.state == EXIT_POWERUP) {
+          printf("Transitioned to accelerating with velocity %lf\n", v_fsm.v);
+        }
         // Acclerating
         on_X_press();
       } else if (b_button.value == 1) {
@@ -382,6 +387,8 @@ int main(void) {
       compare_time = read_timer();
       if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
         decay_hazard(); 
+      } else {
+          v_fsm.t_curr = read_timer();
       }
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
@@ -413,6 +420,7 @@ int main(void) {
 	  }
   	// Drive the Kobuki
   	drive();
+    printf("v: %lf\n", v_fsm.v);
     if (shouldPollPos) {
       //update_dwm_pos(&spi_instance, location_bytes);
       //simple_ble_notify_char(&location_char);
