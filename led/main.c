@@ -5,19 +5,19 @@
 int main(void) {
     /* Define PWM duty cycle sequence */
 	pwm_init();
-	lightup_led(5, 1);
-	nrf_delay_ms(1000);
-	lightup_led(5, 0);
-	nrf_delay_ms(1000);
-	lightup_led(5, 4);
+	lightup_led(7, 1);
+	// nrf_delay_ms(1000);
+	// lightup_led(5, 0);
+	// nrf_delay_ms(1000);
+	// lightup_led(5, 4);
 	while (1) {
-		// lightup_led(5, 1);
-		// nrf_delay_ms(1000);
-		// lightup_led(5, 2);
-		// nrf_delay_ms(1000);
-		// lightup_led(5, 3);
-		// nrf_delay_ms(1000);
-		// lightup_led(5, 0);
-		// nrf_delay_ms(1000);
+	// 	lightup_led(7, 1);
+	// 	nrf_delay_ms(1000);
+	// 	lightup_led(7, 2);
+	// 	nrf_delay_ms(1000);
+	// 	lightup_led(7, 3);
+	// 	nrf_delay_ms(1000);
+	// 	lightup_led(7, 0);
+	// 	nrf_delay_ms(1000);
 	}
 }
