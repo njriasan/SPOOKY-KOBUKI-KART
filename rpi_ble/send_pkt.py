@@ -139,6 +139,12 @@ class RobotController():
     def receive_buttons(self):
         while True:
             try:
+                pkt = self.manager_sock.recv(1)
+                self.process_manager_msg(pkt)
+            except socket.error:
+                pass
+                # if we have no message from the manager just ignore it
+            try:
                 pkt = self.controller_sock.recv(12)
                 self.on_pkt_receive(pkt)
             except socket.error:
@@ -149,9 +155,28 @@ class RobotController():
                 # return sooner, so it is imprecise
                 self.robot.waitForNotifications(0.1)
 
+    def process_manager_msg(self, pkt):
+        if (len(pkt) == 0):
+            sys.exit (1)
+        assert(len(pkt) == 1)
+        pkt_value = int.from_bytes(data, byteorder='little')
+        # We have received a powerup value
+        if pkt_value >= 1 and pkt_value <= 3:
+            # Powerups map to the same value map to the same value
+            self.send_powerup(pkt)
+        # We have received a hazard value
+        elif pkt_value >= 4 and pkt_value <= 6:
+            # Hazard values are 3 greater than than their final
+            # value
+            hazard_value = pkt_value - 3
+            hazard_msg = bytearray([hazard_value])
+            send.send_hazard(hazard_msg)
+
+
     def on_pkt_receive(self, pkt):
         if (len(pkt) == 0):
             sys.exit (1)
+        assert(len(pkt) == 12)
         self.controller.parse_next_state(pkt)
         self.controller.display_all_pressed_buttons()
         for byte in self.controller.get_output_message():
