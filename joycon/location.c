@@ -128,6 +128,61 @@ void poll_for_location(sn_pair_t *pair) {
     }
 }
 
+typedef struct {
+    connection_node_t *kobuki_node;
+    location_t location;
+} kobuki_info_t;
+
+/*
+ * Helper function to select which kobuki is hit by a redshell and then hit
+ * that Kobuki.
+ */
+void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
+
+}
+
+/*
+ * Helper function to shell which kobuki is hit by a blueshell and then hit
+ * that Kobuki.
+ */
+void assign_blueshell(kobuki_info_t *in_play_kobukis, size_t num_kobukis, size_t requesting_index) {
+
+}
+
+/*
+ * Helper function used to process any shell requests.
+ */
+void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
+    // Add code for processing if any kobukis use a powerup
+    for (size_t i = 0; i < num_kobukis; i++) {
+        connection_node_t *node = in_play_kobukis[i].kobuki_node;
+        uint8_t shell_request = get_shell_request(node);
+        if (shell_reqeuest == REDSHELL_REQUEST) {
+            assign_blueshell(in_play_kobukis, num_kobukis, i);
+        } else if (shell_request == BLUESHELL_REQUEST) {
+            assign_blueshell(in_play_kobukis, num_kobukis, i); 
+        }
+    }
+}
+
+/*
+ * Helper function used to assign powerups/hazards on the track to the closest Kobuki.
+ */
+void assign_track_events(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
+    // Add code to determine if any kobukis are in range of the powerup/hazard
+}
+
+/*
+ * Helper function used for creating the leaderboard.
+ */
+void generate_leaderboard(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
+    // Fill in code to generate rankings based on the map layout
+    for (size_t i = 0; i < num_kobukis; i++) {
+        printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", in_play_kobukis[i],kobuki_node->readable_name,
+                in_play_kobukis[i].location.x, in_play_kobukis[i].location.y, in_play_kobukis[i].location.z);
+    }
+}
+
 /*
  * Function to display the current locations of all Kobukis. This is a debugging
  * function intended as an intermediate for later using a global location list
@@ -135,11 +190,23 @@ void poll_for_location(sn_pair_t *pair) {
  */
 void display_locations(connection_node_t *kobuki_list) {
     connection_node_t *kobuki;
-    location_t location;
+    // We can never have more than NUM_MAC_ADDRS locations
+    kobuki_info_t valid_kobukis[NUM_MAC_ADDRS];
+    // Actual number of active kobukis
+    size_t num_kobukis = 0;
+    // First generate a list of locations
     for (kobuki = kobuki_list; kobuki != NULL; kobuki = kobuki->next) {
-        if (get_location(kobuki, &location)) {
-            printf("Kobuki %s at location(x:%f, y:%f, z:%f)\n", kobuki->readable_name,
-                    location.x, location.y, location.z);
+        if (get_location(kobuki, &valid_kobukis[num_kobukis].location)) {
+            valid_kobukis[num_kobukis].kobuki_node = kobuki;
+            num_kobukis += 1;
         }
     }
+    // Now generate the leaderboard
+    generate_leaderboard(valid_kobukis, num_kobukis);
+
+    // Check to see if you should assign any powerups or hazards
+    assign_track_events(valid_kobukis, num_kobukis);
+
+    // Check to see if any shells have been activated
+    process_used_shells(valid_kobukis, num_kobukis);
 }

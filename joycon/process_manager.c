@@ -19,7 +19,6 @@
  * for each bluetooth connection process, as well as client connection code.
  */
 
-#define NUM_MAC_ADDRS 2
 
 
 // List of all the mac addresses for possible joy con pairings

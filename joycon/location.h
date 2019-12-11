@@ -5,6 +5,8 @@
 
 #define SECOND_TO_MICROSECONDS 1000000
 
+#define NUM_MAC_ADDRS 2
+
 typedef struct {
     int server_fd;
     connection_node_t *node;
