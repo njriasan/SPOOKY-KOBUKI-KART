@@ -161,7 +161,7 @@ void hazard_evt_write() {
       printf("Hazard Received %d\n", hazard_byte);
 
       if (hazard_byte == BANANA_HAZARD) { 
-        lightup_led(3);
+        lightup_led(4);
       }
     }
   }
