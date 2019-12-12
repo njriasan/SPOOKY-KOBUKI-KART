@@ -1,4 +1,5 @@
 #include "powerups.h"
+#include "led.h"
 
 #include "nrf_delay.h"
 
@@ -46,6 +47,7 @@ void apply_mushroom() {
   	v_fsm.t_curr = read_timer();
   	powerup_duration = MUSHROOM_TICKS;
     powerup_starttime = read_timer();
+    lightup_led(0);
 	powerup_value = NO_POWERUP;
 }
 
@@ -57,6 +59,7 @@ void apply_redshell_powerup() {
         shell_not_notified = true;
     }
     complete_powerup();
+    lightup_led(0);
     powerup_value = NO_POWERUP;
 }
 
@@ -67,15 +70,16 @@ void apply_blueshell_powerup() {
         shell_not_notified = true;
     }
     complete_powerup();
+    lightup_led(0);
    	powerup_value = NO_POWERUP;
 }
 
 void decay_mushroom() {
-  active_powerup = false;
+  	active_powerup = false;
 	v_fsm.state = MUSHROOM_DECAY;
 	v_fsm.v_dot = MUSHROOM_DECAY_ACC;
 	v_fsm.t_prev = v_fsm.t_curr;
-  v_fsm.t_curr = read_timer();
+  	v_fsm.t_curr = read_timer();
 	if (v_fsm.v <= BASE_VELOCITY_MAX) {
 		complete_powerup();
 	} else {
@@ -86,7 +90,6 @@ void decay_mushroom() {
 void apply_banana() {
   active_hazard = true;
 	complete_powerup();
-	powerup_value = NO_POWERUP;
 	v_fsm.state = REST;
   v_fsm.v = 0.0;
   v_fsm.v_dot = 0.0;
@@ -129,6 +132,7 @@ void apply_blueshell_hazard() {
 void decay_hazard() {
   active_hazard = false;
 	t_fsm.state = CENTER;
+	lightup_led(0);
 	hazard_value = NO_HAZARD;
 	hazard_duration = 0;
 }
@@ -139,6 +143,5 @@ void complete_powerup() {
 	v_fsm.state = EXIT_POWERUP;
 	v_fsm.v_max = BASE_VELOCITY_MAX;
   v_fsm.v_dot = ACCELERATION;
-	//clear_lights();
 	v_update();
 }

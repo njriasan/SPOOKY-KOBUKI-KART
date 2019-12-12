@@ -26,7 +26,7 @@
 #include "kobukiActuator.h"
 #include "kobukiSensorPoll.h"
 #include "kobukiSensorTypes.h"
-#include "kobukiUtilities.h"`
+#include "kobukiUtilities.h"
 #include "mpu9250.h"
 #include "simple_ble.h"
 #include "dwm_driver.h"
@@ -35,7 +35,7 @@
 #include "states.h"
 #include "fsm.h"
 #include "powerups.h"
-#include "pwm.h"
+#include "led.h"
 
 #define NUM_BUTTONS 4
 
@@ -137,14 +137,15 @@ void controller_evt_write() {
 // Update the powerup value only if there is no existing powerup
 void powerup_evt_write() {
   printf("Powerup value %d\n", powerup_byte);
-  if (powerup_value == NO_POWERUP) {
+  if (powerup_value == NO_POWERUP && hazard_value == NO_HAZARD) {
     if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
       powerup_value = powerup_byte;
       // Add information about setting the lights
       if (powerup_byte == MUSHROOM_POWERUP) {
-
+        lightup_led(2);
       } else if (powerup_byte == REDSHELL_POWERUP) {
         printf("Received redshell\n");
+        lightup_led(1);
       }
     }
   }
@@ -157,6 +158,11 @@ void hazard_evt_write() {
   if (hazard_value == NO_HAZARD) {
     if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
+      printf("Hazard Received %d\n", hazard_byte);
+
+      if (hazard_byte == BANANA_HAZARD) { 
+        lightup_led(3);
+      }
     }
   }
   hazard_byte = NO_HAZARD;
@@ -269,11 +275,6 @@ int main(void) {
   // Start Advertising
   simple_ble_adv_only_name();
 
-  // initialize LEDs
-  // nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
-  // nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
-  // nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
-
   // // initialize display or dwm
   nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
   nrf_drv_spi_config_t spi_config = {
@@ -316,6 +317,9 @@ int main(void) {
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
   
+  // initialize LED
+  led_init();
+
   // initialize Kobuki
   kobukiInit();
   printf("Kobuki initialized!\n");
@@ -352,7 +356,6 @@ int main(void) {
         }
       } else if (v_fsm.state == MUSHROOM_DECAY) {
         decay_mushroom();
-        // nrf_delay_ms(100);
       // Add logic for the button press here
       } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
         // printf("%s%d\n", "powerup_value is ", powerup_value);
