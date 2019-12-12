@@ -105,7 +105,7 @@ void poll_for_location(sn_pair_t *pair) {
         // Check if you need to deliver an event
         uint8_t event_value = get_event_request_reset(node);
         if (event_value != NO_EVENT) {
-          printf("Event triggered\n");
+          printf("Event triggered for %s\n", node->readable_name);
           uint8_t write_result = 0;
           while ((write_result = write(connection_socket, &event_value, 1)) == -1) {
               printf("Non-blocking issue with socket\n");
