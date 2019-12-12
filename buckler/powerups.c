@@ -90,6 +90,7 @@ void decay_mushroom() {
 void apply_banana() {
   active_hazard = true;
 	complete_powerup();
+  powerup_value = NO_POWERUP;
 	v_fsm.state = REST;
   v_fsm.v = 0.0;
   v_fsm.v_dot = 0.0;
