@@ -20,7 +20,10 @@
 #include "nrf_delay.h"
 
 #define PWM_PIN 3
-#define NUM_LEDS 6
+#define NUM_LEDS 7
+#define zero_bit 6UL | (0x8000) 
+#define one_bit 13UL | (0x8000)
+#define reset_bit 0UL | (0x8000)
 
 nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
 
@@ -47,7 +50,7 @@ static void pwm_init() {
     nrf_drv_pwm_config_t const config0 = {
         .output_pins =
         {
-            PWM_PIN | NRF_DRV_PWM_PIN_INVERTED,                              
+            PWM_PIN,                              
             NRF_DRV_PWM_PIN_NOT_USED,             
             NRF_DRV_PWM_PIN_NOT_USED,             
             NRF_DRV_PWM_PIN_NOT_USED,             
@@ -60,8 +63,7 @@ static void pwm_init() {
         .step_mode    = NRF_PWM_STEP_AUTO
     };
 
-    // int16_t buf[] = {(1 << 15) | 1500}; // Inverse polarity (bit 15), 1500us duty cycle
-    // NRF_PWM0->SEQ[0].PTR = (uint32_t)&buf[0];
+    
     /* Initialize the pwm instance */
     err_code = nrf_drv_pwm_init(&m_pwm0, &config0, NULL);
     if (err_code != NRF_SUCCESS) {
@@ -69,55 +71,55 @@ static void pwm_init() {
     }
 
     for (uint32_t i = 0; i < 40; i++) {
-        reset_values[i] = 20;
+        reset_values[i] = reset_bit;
     }
 
     for (uint32_t led_num = 0; led_num < NUM_LEDS; led_num++) {
         // fill clear_values with pwm duty cycle values
         for (uint32_t i = 0; i < 24; i++) {
-            clear_values[led_num * 24 + i] = 13;
+            clear_values[led_num * 24 + i] = zero_bit;
         }
 
         // fill red_values with pwm duty cycle values
         for (uint32_t i = 0; i < 8; i++) {
-            red_values[led_num * 24 + i] = 6;
+            red_values[led_num * 24 + i] = zero_bit;
         }
         for (uint32_t i = 8; i < 16; i++) {
-            red_values[led_num * 24 + i] = 13;
+            red_values[led_num * 24 + i] = one_bit;
         }
         for (uint32_t i = 16; i < 24; i++) {
-            red_values[led_num * 24 + i] = 13;
+            red_values[led_num * 24 + i] = zero_bit;
         }
 
         // fill green_values with pwm duty cycle values
         for (uint32_t i = 0; i < 8; i++) {
-            green_values[led_num * 24 + i] = 13;
+            green_values[led_num * 24 + i] = one_bit;
         }
         for (uint32_t i = 8; i < 16; i++) {
-            green_values[led_num * 24 + i] = 13;
+            green_values[led_num * 24 + i] = zero_bit;
         }
         for (uint32_t i = 16; i < 24; i++) {
-            green_values[led_num * 24 + i] = 6;
+            green_values[led_num * 24 + i] = zero_bit;
         }
 
         // fill blue_values with pwm duty cycle values
         for (uint32_t i = 0; i < 8; i++) {
-            blue_values[led_num * 24 + i] = 13;
+            blue_values[led_num * 24 + i] = zero_bit;
         }
         for (uint32_t i = 8; i < 16; i++) {
-            blue_values[led_num * 24 + i] = 6;
+            blue_values[led_num * 24 + i] = zero_bit;
         }
         for (uint32_t i = 16; i < 24; i++) {
-            blue_values[led_num * 24 + i] = 6;
+            blue_values[led_num * 24 + i] = one_bit;
         }
     }
 }
 
-static void pwm_start(nrf_pwm_values_common_t *arr, size_t arr_len) {
+static void pwm_start(nrf_pwm_values_common_t *pwm_values, size_t pwm_values_len) {
     /* Define duty cycle sequence*/
     nrf_pwm_sequence_t const seq = {
-        .values.p_common = arr,
-        .length          = arr_len,
+        .values.p_common = pwm_values,
+        .length          = pwm_values_len,
         .repeats         = 0,
         .end_delay       = 0
     };
@@ -131,7 +133,7 @@ static void pwm_start(nrf_pwm_values_common_t *arr, size_t arr_len) {
 
     /* Play the PWM sequence on an intialized pwm instance*/
     nrf_drv_pwm_complex_playback(&m_pwm0, &seq, &reset_seq, 1, NRF_DRV_PWM_FLAG_LOOP); // loop playback
-    nrf_drv_pwm_complex_playback(&m_pwm0, &seq, &reset_seq, 1, 0); // play once each led
+    // nrf_drv_pwm_complex_playback(&m_pwm0, &seq, &reset_seq, 1, 0); // play once each led
 }
 
 void led_init() {
