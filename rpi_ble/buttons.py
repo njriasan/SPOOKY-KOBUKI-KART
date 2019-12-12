@@ -53,7 +53,7 @@ class ButtonState:
 class Button:
     def __init__(self, input_bit_list, output_bit_list, button_states_map, name):
         self.input_byte_num, self.input_mask, self.input_shift = self._validate_bit_list (input_bit_list, 11)
-        self.output_byte_num, self.output_mask, self.output_shift = self._validate_bit_list (output_bit_list, 1)
+        self.output_byte_num, _, self.output_shift = self._validate_bit_list (output_bit_list, 1)
         self.mapping, self.state = self._validate_map (button_states_map)
         self.name = self._validate_name (name)
 
@@ -142,11 +142,10 @@ class Button:
     def __repr__(self):
         return ("Button {}. It contains the following map of inputs to outputs\n {}.\n" \
                 + "It checks its state with the mask {} on byte {}, shifting by {} bits.\n" \
-                + "It outputs its state with the mask {} on byte {}, shifting by {} bits.\n" \
+                + "It outputs its state on byte {}, shifting by {} bits.\n" \
                 + "The button is currently in state {}") \
                 .format (self.name, repr(self.mapping), hex(self.input_mask), \
-                    self.input_byte_num, self.input_shift, hex(self.output_mask), \
-                    self.output_byte_num, self.output_shift, self.state)
+                    self.input_byte_num, self.input_shift, self.output_byte_num, self.output_shift, self.state)
 
     """
         Returns the status of the button.
@@ -161,13 +160,19 @@ class Button:
         print(self.return_status())
 
     """
+        Returns if a button is not pressed
+    """
+    def is_not_pressed(self):
+        return str(self.state) == "NOT PRESSED"
+
+    """
         Prints the current status of the button as long as it is not in the 
         NOT PRESSED state.
 
         Returns if the status was printed.
     """
     def display_if_pressed(self):
-        if str(self.state) != "NOT PRESSED":
+        if not self.is_not_pressed():
             self.display_status()
             return True
         return False
@@ -189,11 +194,11 @@ class Button:
         assert (len(output_msg) == 2)
         added_input = (self.state.output << self.output_shift)
         # Zero out all the bits we occupy
-        output_byte = int(output_msg[self.output_byte_num] & ~(self.output_mask))
+        output_byte = int(output_msg[self.output_byte_num]) 
         # Or the bits
         output_byte = output_byte | added_input
-        return output_msg[0:self.output_byte_num] + bytearray([output_byte]) + output_msg[self.output_byte_num+1:]
-
+        result = output_msg[0:self.output_byte_num] + bytearray([output_byte]) + output_msg[self.output_byte_num+1:] 
+        return result
 
 
 """

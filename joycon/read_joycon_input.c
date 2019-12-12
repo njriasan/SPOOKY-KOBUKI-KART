@@ -51,10 +51,27 @@ int setup_server_socket (struct addrinfo *server) {
 
 
 /*
- *  Function that spawns a server and then writes the port to the pipe
- *  specified, closing the pipe.
+ *  Function that sends a port number across the pipe and closes the pipe. 
  */
-int spawn_server (int write_pipe_fd) {
+void send_port(int write_pipe_fd, int port_num) {
+    char port[6];
+    snprintf (port, 6, "%d", port_num);
+    ssize_t data_sent = 0;
+    ssize_t curr_write = 0;
+    while (data_sent < sizeof(int32_t) && 
+            (curr_write = write (write_pipe_fd, ((char *) &port_num) + data_sent, 
+                                 sizeof (int32_t) - data_sent)) > 0) {
+
+        data_sent += curr_write;
+    }
+    close (write_pipe_fd);
+}
+
+/*
+ *  function that spawns a server and then places the port number
+ *  inside the pointer passed in.
+ */
+int spawn_server (int *port_ptr) {
     srand (time(0));
     while (true) {
         int32_t port_num = (rand () % (MAX_PORT - MIN_PORT)) + MIN_PORT;
@@ -64,15 +81,7 @@ int spawn_server (int write_pipe_fd) {
         if (server != NULL) {
             int server_fd = setup_server_socket (server);
             if (server_fd != -1) {
-                ssize_t data_sent = 0;
-                ssize_t curr_write = 0;
-                while (data_sent < sizeof(int32_t) && 
-                        (curr_write = write (write_pipe_fd, ((char *) &port_num) + data_sent, 
-                                             sizeof (int32_t) - data_sent)) > 0) {
-
-                    data_sent += curr_write;
-                }
-                close (write_pipe_fd);
+                *port_ptr = port_num;
                 return server_fd;
             }
         }
@@ -123,9 +132,11 @@ void transfer_hid_data (int socket_fd, unsigned char *data, unsigned int size) {
  */
 int handle_joycon(int write_pipe_fd, char *device_path) {
     int res;
+    int port_num = 0;
 
     // Spawn the server socket used for IPC with the BLE layer
-    int server_fd = spawn_server (write_pipe_fd);
+    int server_fd = spawn_server (&port_num);
+    send_port(write_pipe_fd, port_num);
     assert (server_fd != -1);
     assert (listen (server_fd, 1) >= 0);
     int connection_socket = accept (server_fd, NULL, NULL);

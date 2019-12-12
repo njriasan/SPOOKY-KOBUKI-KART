@@ -7,8 +7,11 @@ typedef enum {
 	REST,
 	ACCELERATE,
 	REVERSE,
-	CRUISE
-} power_states;
+	CRUISE,
+	MUSHROOM,
+	MUSHROOM_DECAY,
+	EXIT_POWERUP
+} velocity_states;
 
 typedef enum {
 	CENTER,
@@ -17,7 +20,10 @@ typedef enum {
 	LEFT_DOWN,
 	RIGHT,
 	RIGHT_UP,
-	RIGHT_DOWN
+	RIGHT_DOWN,
+	BANANA,
+    REDSHELL,
+    BLUESHELL
 } turning_states;
 
 #endif /* STATES_H_ */
