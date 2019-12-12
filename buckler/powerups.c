@@ -1,5 +1,4 @@
 #include "powerups.h"
-#include "../led/pwm.h"
 
 #include "nrf_delay.h"
 
@@ -34,6 +33,7 @@ uint32_t compare_time = 0;
 	decay to the previous max.
 */
 void apply_mushroom() {
+	printf("%s\n", "enters mushroom function");
     active_powerup = true;
     v_fsm.state = MUSHROOM;
   	v_fsm.v = POWERUP_VELOCITY_MAX;
@@ -47,15 +47,18 @@ void apply_mushroom() {
 }
 
 void apply_redshell_powerup() {
+	printf("%s\n", "enters red shell function");
     shell_byte = REDSHELL_BYTE;
     simple_ble_notify_char(&shell_char);
     complete_powerup();
+    powerup_value = NO_POWERUP;
 }
 
 void apply_blueshell_powerup() {
     shell_byte = BLUESHELL_BYTE;
     simple_ble_notify_char(&shell_char);
     complete_powerup();
+   	powerup_value = NO_POWERUP;
 }
 
 void decay_mushroom() {
@@ -86,6 +89,7 @@ void apply_banana() {
 }
 
 void apply_redshell_hazard() {
+  printf("%s\n", "redshell hazard triggered");
   active_hazard = true;
   complete_powerup();
 	powerup_value = NO_POWERUP;
@@ -95,6 +99,7 @@ void apply_redshell_hazard() {
 	t_fsm.state = REDSHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
+	  hazard_starttime = read_timer();
 	hazard_duration = HAZARD_TICKS;
 }
 
@@ -108,6 +113,7 @@ void apply_blueshell_hazard() {
 	t_fsm.state = BLUESHELL;
 	t_fsm.v_left = HAZARD_TURN_VELOCITY;
 	t_fsm.v_right = 0.0;
+	  hazard_starttime = read_timer();
 	hazard_duration = HAZARD_TICKS;
 }
 

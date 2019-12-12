@@ -26,7 +26,7 @@
 #include "kobukiActuator.h"
 #include "kobukiSensorPoll.h"
 #include "kobukiSensorTypes.h"
-#include "kobukiUtilities.h"
+#include "kobukiUtilities.h"`
 #include "mpu9250.h"
 #include "simple_ble.h"
 #include "dwm_driver.h"
@@ -54,7 +54,7 @@ KobukiSensors_t sensors = {0};
 static simple_ble_config_t ble_config = {
         // c0:98:e5:yy:xx:xx
         .platform_id       = 0x00,    // used as 4th octect in device BLE address yy
-        .device_id         = 0x11, // TODO: replace with your lab bench number xx
+        .device_id         = 0x12, // TODO: replace with your lab bench number xx
         .adv_name          = "KOBUKI", // used in advertisements if there is room
         .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
         .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -136,12 +136,15 @@ void controller_evt_write() {
 
 // Update the powerup value only if there is no existing powerup
 void powerup_evt_write() {
+  printf("Powerup value %d\n", powerup_byte);
   if (powerup_value == NO_POWERUP) {
     if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
       powerup_value = powerup_byte;
       // Add information about setting the lights
       if (powerup_byte == MUSHROOM_POWERUP) {
-        //lightup_led(7, 1);
+
+      } else if (powerup_byte == REDSHELL_POWERUP) {
+        printf("Received redshell\n");
       }
     }
   }
@@ -150,6 +153,7 @@ void powerup_evt_write() {
 
 // Update the hazard value only if there is no existing hazard
 void hazard_evt_write() {
+  printf("Hazard value %d\n", hazard_byte);
   if (hazard_value == NO_HAZARD) {
     if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
@@ -266,13 +270,11 @@ int main(void) {
   simple_ble_adv_only_name();
 
   // initialize LEDs
-  nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
-  nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
+  // nrf_gpio_pin_dir_set(23, NRF_GPIO_PIN_DIR_OUTPUT);
+  // nrf_gpio_pin_dir_set(24, NRF_GPIO_PIN_DIR_OUTPUT);
+  // nrf_gpio_pin_dir_set(25, NRF_GPIO_PIN_DIR_OUTPUT);
 
-
-
-  // initialize display or dwm
+  // // initialize display or dwm
   nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
   nrf_drv_spi_config_t spi_config = {
     .sck_pin = BUCKLER_LCD_SCLK,
@@ -289,7 +291,7 @@ int main(void) {
   error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
   printf("Error Check done.\n");
-  /*
+  
   uint8_t* readData = dwm_tag_init(&spi_instance);
   while (readData[0] != 0x40 || readData[2] != 0x00) {
     printf("Config errored!");
@@ -313,7 +315,7 @@ int main(void) {
   APP_ERROR_CHECK(error_code);
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
-  */
+  
   // initialize Kobuki
   kobukiInit();
   printf("Kobuki initialized!\n");
@@ -324,9 +326,6 @@ int main(void) {
   init_turning_fsm(&t_fsm);
 
 
-  /*inialize pwm to start lights*/
-  //pwm_init();
-  // lightup_led(7, 0);
   // nrf_delay_ms(100);
   // Launch a new thread to run the dwm code
 
@@ -339,7 +338,7 @@ int main(void) {
     // Update location roughly every 1/10 of a second
     if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.5)) {
       timer_prev = timer_curr;
-      //while (!dwm_request_pos(&spi_instance));
+      while (!dwm_request_pos(&spi_instance));
     }
     if (!active_hazard) {
       if (active_powerup) {
@@ -348,8 +347,6 @@ int main(void) {
         if (get_time_elapsed(powerup_starttime, compare_time) > powerup_duration) {
           decay_mushroom();
           //printf("%s\n", "powerup ended");
-          //lightup_led(7, 0);  
-          //nrf_delay_ms(100);
         } else {
           v_fsm.t_curr = read_timer();
         }
@@ -358,7 +355,7 @@ int main(void) {
         // nrf_delay_ms(100);
       // Add logic for the button press here
       } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
-        printf("%s%d\n", "powerup_value is ", powerup_value);
+        // printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();
           // nrf_delay_ms(100);
@@ -369,7 +366,7 @@ int main(void) {
         }
       } else if (x_button.value == 1) {
         if (v_fsm.state == EXIT_POWERUP) {
-          printf("Transitioned to accelerating with velocity %lf\n", v_fsm.v);
+          // printf("Transitioned to accelerating with velocity %lf\n", v_fsm.v);
         }
         // Acclerating
         on_X_press();
@@ -420,10 +417,10 @@ int main(void) {
 	  }
   	// Drive the Kobuki
   	drive();
-    printf("v: %lf\n", v_fsm.v);
+    // printf("v: %lf\n", v_fsm.v);
     if (shouldPollPos) {
-      //update_dwm_pos(&spi_instance, location_bytes);
-      //simple_ble_notify_char(&location_char);
+      update_dwm_pos(&spi_instance, location_bytes);
+      simple_ble_notify_char(&location_char);
     }
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
