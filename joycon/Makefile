@@ -6,7 +6,7 @@ LIBRARIES= -lhidapi-hidraw -lm
 	$(CC) $(FLAGS) -c $<
 	
 
-process_manager: connection.o location.o process_manager.o read_joycon_input.o 
+process_manager: connection.o location.o process_manager.o read_joycon_input.o track_events.o
 	$(CC) $(FLAGS) -o $@ $^ $(LIBRARIES)
 
 clean:

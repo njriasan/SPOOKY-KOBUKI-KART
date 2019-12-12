@@ -19,6 +19,8 @@ connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr
     node->is_valid_location = false;
     node->shell_request = NO_SHELL_REQUEST;
     node->event_triggered = NO_EVENT;
+    node->acquired_track_events = 0;
+    node->lap_number = 0;
     pthread_mutex_init(&node->location_lock, NULL);
     return node;
 }
@@ -138,3 +140,30 @@ uint8_t get_event_request_reset(connection_node_t *node) {
     pthread_mutex_unlock(&node->location_lock);
     return event_value;
 }
+
+/*
+ * Helper function used to reset a Kobuki for the start of a new race.
+ */
+void reset_race(connection_node_t *node) {
+    node->acquired_track_events = 0;
+    node->lap_number = 0;
+}
+
+/*
+ * Helper function used to increment the lap number and reset all track
+ * events for a kobuki.
+ */
+void enter_next_lap(connection_node_t *node) {
+    node->lap_number++;
+    node->acquired_track_events = 0;
+}
+
+/*
+ * Helper function to apply event_id if not already applied. Returns
+ * true if the event should be applied and otherwise false.
+ */
+bool apply_track_event(connection_node_t *node, uint8_t event_id) {
+    bool result = (node->acquired_track_events & (1 << event_id)) == 0;
+    node->acquired_track_events |= (1 << event_id);
+    return result;
+} 

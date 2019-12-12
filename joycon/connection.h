@@ -54,6 +54,13 @@ typedef struct connection_node {
     // Value used to communicate the acquisition of a powerup or hazard
     // to the kobuki
     uint8_t event_triggered;
+    // Field used to denote which track events have already been acquired
+    // on this lap. A 1 in bit i means that track event i has already been
+    // acquired.
+    uint8_t acquired_track_events;
+    // Value used to indicate which lap the kobuki has entered. This should
+    // be restarted whenever a new "race" has occurred
+    uint8_t lap_number;
     // Next info for keeping track of a linked list
     struct connection_node *next;
 } connection_node_t;
@@ -133,5 +140,22 @@ uint8_t get_event_request(connection_node_t *node);
  * It also resets the event_triggered to NO_EVENT
  */
 uint8_t get_event_request_reset(connection_node_t *node);
+
+/*
+ * Helper function used to reset a Kobuki for the start of a new race.
+ */
+void reset_race(connection_node_t *node);
+
+/*
+ * Helper function used to increment the lap number and reset all track
+ * events for a kobuki.
+ */
+void enter_next_lap(connection_node_t *node);
+
+/*
+ * Helper function to apply event_id if not already applied. Returns
+ * true if the event should be applied and otherwise false.
+ */
+bool apply_track_event(connection_node_t *node, uint8_t event_id);
 
 #endif
