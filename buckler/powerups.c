@@ -20,6 +20,9 @@ uint8_t hazard_value = NO_HAZARD;
 bool active_powerup = false;
 bool active_hazard = false;
 
+// Determines if the shell characteristic needs to be notified.
+// This is set to true if the call to simple_ble_notify_char fails.
+bool shell_not_notified = false;
 
 double powerup_duration = 0.0;
 double hazard_duration = 0.0;
@@ -43,20 +46,26 @@ void apply_mushroom() {
   	v_fsm.t_curr = read_timer();
   	powerup_duration = MUSHROOM_TICKS;
     powerup_starttime = read_timer();
-	  powerup_value = NO_POWERUP;
+	powerup_value = NO_POWERUP;
 }
 
 void apply_redshell_powerup() {
 	printf("%s\n", "enters red shell function");
     shell_byte = REDSHELL_BYTE;
-    simple_ble_notify_char(&shell_char);
+    uint32_t err_code = simple_ble_notify_char(&shell_char);
+    if (err_code != NRF_SUCCESS) {
+        shell_not_notified = true;
+    }
     complete_powerup();
     powerup_value = NO_POWERUP;
 }
 
 void apply_blueshell_powerup() {
     shell_byte = BLUESHELL_BYTE;
-    simple_ble_notify_char(&shell_char);
+    uint32_t err_code = simple_ble_notify_char(&shell_char);
+    if (err_code != NRF_SUCCESS) {
+        shell_not_notified = true;
+    }
     complete_powerup();
    	powerup_value = NO_POWERUP;
 }

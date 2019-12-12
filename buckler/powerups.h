@@ -23,6 +23,11 @@ extern uint8_t hazard_value;
 extern bool active_powerup;
 extern bool active_hazard;
 
+// Determines if the shell characteristic needs to be notified.
+// This is set to true if the call to simple_ble_notify_char fails.
+extern bool shell_not_notified;
+
+
 // Timers used to calculate powerup duration
 extern double powerup_duration;
 extern double hazard_duration;

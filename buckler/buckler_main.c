@@ -422,6 +422,15 @@ int main(void) {
       update_dwm_pos(&spi_instance, location_bytes);
       simple_ble_notify_char(&location_char);
     }
+
+    // Check if we need to try resend a shell notification
+    if (shell_not_notified) { 
+      uint32_t err_code = simple_ble_notify_char(&shell_char);
+      if (err_code == NRF_SUCCESS) {
+        shell_not_notified = false;
+      }
+    }
+
   	//print_velocity_state(v_fsm.state);
   	//print_turning_state(t_fsm.state);
   	/* May read sensors later. */
