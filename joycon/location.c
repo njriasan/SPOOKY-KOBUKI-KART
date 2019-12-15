@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "location.h"
+#include "track_events.h"
 
 typedef struct {
     int32_t x_int;
@@ -135,13 +136,6 @@ typedef struct {
     location_t location;
 } kobuki_info_t;
 
-/*
- * Helper function to calculate the euclidean distance between two locations.
- */
-double get_euclidean_distance(location_t *l1, location_t *l2) {
-    double result = sqrt(pow(l1->x - l2->x, 2.0) + pow(l1->y - l2->y, 2.0) + pow(l1->z - l2->z, 2.0));
-    return result;
-}
 
 /*
  * Helper function to select the leading kobuki.
