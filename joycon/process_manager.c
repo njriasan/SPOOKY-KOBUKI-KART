@@ -55,9 +55,7 @@ int main(int argc, char* argv[])
         exit (1);
     }
     int res;
-    
-    // Validate that all defined track events are valid
-    validate_uuids();
+
     // Initialize all wide strings
     wchar_t **wide_joycon_mac_addrs = convert_to_wide_strings (joycon_mac_addrs, NUM_MAC_ADDRS);
 

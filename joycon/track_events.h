@@ -5,27 +5,12 @@
 
 #define NUM_POLYGON_POINTS 4
 
-typedef struct {
+typedef location_t track_elem_t[NUM_POLYGON_POINTS];
 
-    // Identifier used to denote a particular track_elem. This should be a unique integer
-    // between 0 and 7 (so we support up to 8 track events).
-    uint8_t uuid;
+extern track_elem_t mushroom_tile;
 
-    // Points the define the exterior vertices for defining the area of the polygon.
-    location_t vertices[NUM_POLYGON_POINTS];
-} track_elem_t;
+extern track_elem_t redshell_tile;
 
-#define NUM_POWERUPS 2
-
-extern track_elem_t powerup_arr[NUM_POWERUPS];
-
-#define NUM_HAZARDS 1
-
-extern track_elem_t hazard_arr[NUM_HAZARDS];
-
-/*
- * Helper function to verify that all uuids are unique and that all are < 8.
- */
-void validate_uuids();
+extern track_elem_t banana_tile;
 
 #endif
