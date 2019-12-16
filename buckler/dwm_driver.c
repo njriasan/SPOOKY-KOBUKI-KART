@@ -33,7 +33,7 @@ void update_dwm_pos(nrf_drv_spi_t* s, int32_t* location_bytes) {
     memcpy(&y_m, &y, sizeof(y_m));
     memcpy(&z_m, &z, sizeof(z_m));
 
-    // printf("Coordinates: (%f, %f, %f)\n", x_m / 1000.0, y_m / 1000.0, z_m / 1000.0);
+    printf("Coordinates: (%f, %f, %f)\n", x_m / 1000.0, y_m / 1000.0, z_m / 1000.0);
     location_bytes[0] = x_m;
     location_bytes[1] = y_m;
     location_bytes[2] = z_m;
@@ -90,7 +90,7 @@ bool dwm_reset(nrf_drv_spi_t* s) {
   if (err_code != NRF_SUCCESS) {
     return false;
   }
-  uint8_t size_num[2];
+  uint8_t size_num[2] = {0, 0};
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   while (size_num[0] == 0x00) {
     APP_ERROR_CHECK(err_code);
@@ -207,7 +207,7 @@ bool dwm_request_pos(nrf_drv_spi_t* s) {
 
 uint8_t* dwm_recieve_pos(nrf_drv_spi_t* s) {
   // Tag responds with (size per transmission, num_transitions)
-  uint8_t size_num[2];
+  uint8_t size_num[2] = {0, 0};
   ret_code_t err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   while (size_num[0] == 0x00) {
     APP_ERROR_CHECK(err_code);
@@ -217,7 +217,7 @@ uint8_t* dwm_recieve_pos(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  // printf("%x %x\n", size_num[0], size_num[1]);
+  printf("%x %x\n", size_num[0], size_num[1]);
   // Reading data from tag
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
