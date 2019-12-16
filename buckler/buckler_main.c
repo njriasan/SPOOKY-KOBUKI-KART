@@ -52,25 +52,25 @@ KobukiSensors_t sensors = {0};
 
 // Intervals for advertising and connections
 static simple_ble_config_t ble_config = {
-        // c0:98:e5:yy:xx:xx
-        .platform_id       = 0x00,    // used as 4th octect in device BLE address yy
-        .device_id         = 0x12, // TODO: replace with your lab bench number xx
-        .adv_name          = "KOBUKI", // used in advertisements if there is room
-        .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
-        .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
-        .max_conn_interval = MSEC_TO_UNITS(200, UNIT_1_25_MS),
+  // c0:98:e5:yy:xx:xx
+  .platform_id       = 0x00,          // used as 4th octect in device BLE address yy
+  .device_id         = 0x12,       // TODO: replace with your lab bench number xx
+  .adv_name          = "KOBUKI",       // used in advertisements if there is room
+  .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
+  .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
+  .max_conn_interval = MSEC_TO_UNITS(200, UNIT_1_25_MS),
 };
 
-//4607eda0-f65e-4d59-a9ff-84420d87a4ca
+// 4607eda0-f65e-4d59-a9ff-84420d87a4ca
 static simple_ble_service_t robot_service = {{
-    .uuid128 = {0xca,0xa4,0x87,0x0d,0x42,0x84,0xff,0xA9,
-                0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x56}
-}};
+                                               .uuid128 = {0xca,0xa4,0x87,0x0d,0x42,0x84,0xff,0xA9,
+                                                           0x59,0x4D,0x5e,0xf6,0xa0,0xed,0x07,0x56}
+                                             }};
 
 // TODO: Declare control characteristic and variable for our service
 #define CONTROLLER_UUID 0xeda1
 static simple_ble_char_t controller_char = {.uuid16 = CONTROLLER_UUID};
-static uint16_t controller_bytes = 0;
+static uint16_t controller_bytes         = 0;
 
 #define POWERUP_UUID 0xeda2
 static simple_ble_char_t powerup_char = {.uuid16 = 0xeda2};
@@ -81,7 +81,7 @@ static simple_ble_char_t hazard_char = {.uuid16 = 0xeda3};
 static uint8_t hazard_byte = NO_HAZARD;
 
 static simple_ble_char_t location_char = {.uuid16 = 0xeda4};
-static int32_t location_bytes[3] = {0, 0, 0};
+static int32_t location_bytes[3]       = {0, 0, 0};
 
 simple_ble_char_t shell_char = {.uuid16 = 0xeda5};
 uint8_t shell_byte = NO_SHELL_BYTE;
@@ -97,21 +97,21 @@ typedef struct {
   uint8_t value;
 } button_info_t;
 
-static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
-static button_info_t b_button = {"B", 0b1, 0, 0};
-static button_info_t rz_button = {"RZ", 0b1 << 4 , 4, 0};
+static button_info_t x_button          = {"X", 0b1 << 3, 3, 0};
+static button_info_t b_button          = {"B", 0b1, 0, 0};
+static button_info_t rz_button         = {"RZ", 0b1 << 4, 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
-static button_info_t *buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
+static button_info_t* buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
 
 void ble_evt_write(ble_evt_t const* p_ble_evt) {
   switch (p_ble_evt->evt.gatts_evt.params.write.uuid.uuid) {
-    case (CONTROLLER_UUID): 
+    case (CONTROLLER_UUID):
     {
       controller_evt_write();
       break;
     }
-    case (POWERUP_UUID): 
+    case (POWERUP_UUID):
     {
       powerup_evt_write();
       break;
@@ -160,7 +160,7 @@ void hazard_evt_write() {
       hazard_value = hazard_byte;
       printf("Hazard Received %d\n", hazard_byte);
 
-      if (hazard_byte == BANANA_HAZARD) { 
+      if (hazard_byte == BANANA_HAZARD) {
         lightup_led(4);
       }
     }
@@ -168,66 +168,66 @@ void hazard_evt_write() {
   hazard_byte = NO_HAZARD;
 }
 
-void print_velocity_state(velocity_states current_state){
-	switch(current_state){
-	  	case REST: {
-	  		display_write("OFF", DISPLAY_LINE_0);
-	  		break;
-	    }
-	    case ACCELERATE: {
-	      display_write("ACCELERATE", DISPLAY_LINE_0);
-	      break;
-	    }
-	    case REVERSE: {
-	      display_write("REVERSE", DISPLAY_LINE_0);
-	      break;
-	    }
-	    case CRUISE: {
-	   	  display_write("CRUISE", DISPLAY_LINE_0);
-	      break;
-	    }
-      case MUSHROOM: {
-        display_write("MUSHROOM", DISPLAY_LINE_0);
-        break;
-      }
-      case MUSHROOM_DECAY: {
-        display_write("MUSHROOM_DECAY", DISPLAY_LINE_0);
-        break;
-      }
-      case EXIT_POWERUP: {
-        display_write("EXIT_POWERUP", DISPLAY_LINE_0);
-        break;
-      }
-	}
+void print_velocity_state(velocity_states current_state) {
+  switch (current_state) {
+    case REST: {
+      display_write("OFF", DISPLAY_LINE_0);
+      break;
+    }
+    case ACCELERATE: {
+      display_write("ACCELERATE", DISPLAY_LINE_0);
+      break;
+    }
+    case REVERSE: {
+      display_write("REVERSE", DISPLAY_LINE_0);
+      break;
+    }
+    case CRUISE: {
+      display_write("CRUISE", DISPLAY_LINE_0);
+      break;
+    }
+    case MUSHROOM: {
+      display_write("MUSHROOM", DISPLAY_LINE_0);
+      break;
+    }
+    case MUSHROOM_DECAY: {
+      display_write("MUSHROOM_DECAY", DISPLAY_LINE_0);
+      break;
+    }
+    case EXIT_POWERUP: {
+      display_write("EXIT_POWERUP", DISPLAY_LINE_0);
+      break;
+    }
+  }
 }
 
-void print_turning_state(turning_states current_state){
-	switch(current_state){
-	  	case LEFT: {
-	  		display_write("LEFT", DISPLAY_LINE_1);
-	  		break;
-	    }
-	    case CENTER: {
-	      display_write("CENTER", DISPLAY_LINE_1);
-	      break;
-	    }
-	    case RIGHT: {
-	      display_write("RIGHT", DISPLAY_LINE_1);
-	      break;
-	    }
-      case LEFT_UP: {
-        display_write("LEFT_UP", DISPLAY_LINE_1);
-        break;
-      }
-      case RIGHT_UP: {
-        display_write("RIGHT_UP", DISPLAY_LINE_1);
-        break;
-      }
-      case BANANA: {
-        display_write("BANANA", DISPLAY_LINE_1);
-        break;
-      }
-	}
+void print_turning_state(turning_states current_state) {
+  switch (current_state) {
+    case LEFT: {
+      display_write("LEFT", DISPLAY_LINE_1);
+      break;
+    }
+    case CENTER: {
+      display_write("CENTER", DISPLAY_LINE_1);
+      break;
+    }
+    case RIGHT: {
+      display_write("RIGHT", DISPLAY_LINE_1);
+      break;
+    }
+    case LEFT_UP: {
+      display_write("LEFT_UP", DISPLAY_LINE_1);
+      break;
+    }
+    case RIGHT_UP: {
+      display_write("RIGHT_UP", DISPLAY_LINE_1);
+      break;
+    }
+    case BANANA: {
+      display_write("BANANA", DISPLAY_LINE_1);
+      break;
+    }
+  }
 }
 
 int main(void) {
@@ -245,54 +245,53 @@ int main(void) {
   simple_ble_add_service(&robot_service);
 
   // Register your characteristics
-  
 
   // Characteristic for button presses
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(controller_bytes), (uint8_t*)&controller_bytes,
-      &robot_service, &controller_char);
+                                sizeof(controller_bytes), (uint8_t*)&controller_bytes,
+                                &robot_service, &controller_char);
 
   // Characteristic for powerup receiving
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(powerup_byte), (uint8_t*)&powerup_byte,
-      &robot_service, &powerup_char);
+                                sizeof(powerup_byte), (uint8_t*)&powerup_byte,
+                                &robot_service, &powerup_char);
 
   // Characteristic for hazard receiving
   simple_ble_add_characteristic(1, 1, 0, 0, // read, write, notify, vlen
-      sizeof(hazard_byte), (uint8_t*)&hazard_byte,
-      &robot_service, &hazard_char);
+                                sizeof(hazard_byte), (uint8_t*)&hazard_byte,
+                                &robot_service, &hazard_char);
 
   // Characteristic for location sending
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
-      sizeof(location_bytes), (uint8_t*)location_bytes,
-      &robot_service, &location_char);
+                                sizeof(location_bytes), (uint8_t*)location_bytes,
+                                &robot_service, &location_char);
 
   // Characteristic for location sending
   simple_ble_add_characteristic(1, 0, 1, 0, // read, write, notify, vlen
-      sizeof(shell_byte), (uint8_t*)&shell_byte,
-      &robot_service, &shell_char);
-  
+                                sizeof(shell_byte), (uint8_t*)&shell_byte,
+                                &robot_service, &shell_char);
+
   // Start Advertising
   simple_ble_adv_only_name();
 
   // // initialize display or dwm
-  nrf_drv_spi_t spi_instance = NRF_DRV_SPI_INSTANCE(1);
+  nrf_drv_spi_t spi_instance      = NRF_DRV_SPI_INSTANCE(1);
   nrf_drv_spi_config_t spi_config = {
-    .sck_pin = BUCKLER_LCD_SCLK,
-    .mosi_pin = BUCKLER_LCD_MOSI,
-    .miso_pin = BUCKLER_LCD_MISO,
-    .ss_pin = BUCKLER_LCD_CS,
+    .sck_pin      = BUCKLER_LCD_SCLK,
+    .mosi_pin     = BUCKLER_LCD_MOSI,
+    .miso_pin     = BUCKLER_LCD_MISO,
+    .ss_pin       = BUCKLER_LCD_CS,
     .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
-    .orc = 0,
+    .orc       = 0,
     .frequency = NRF_DRV_SPI_FREQ_4M,
-    .mode = NRF_DRV_SPI_MODE_2,
+    .mode      = NRF_DRV_SPI_MODE_2,
     .bit_order = NRF_DRV_SPI_BIT_ORDER_MSB_FIRST
   };
   printf("2nd part\n");
   error_code = nrf_drv_spi_init(&spi_instance, &spi_config, NULL, NULL);
   APP_ERROR_CHECK(error_code);
   printf("Error Check done.\n");
-  
+
   uint8_t* readData = dwm_tag_init(&spi_instance);
   while (readData[0] != 0x40 || readData[2] != 0x00) {
     printf("Config errored!");
@@ -309,14 +308,14 @@ int main(void) {
 
   // initialize i2c master (two wire interface)
   nrf_drv_twi_config_t i2c_config = NRF_DRV_TWI_DEFAULT_CONFIG;
-  i2c_config.scl = BUCKLER_SENSORS_SCL;
-  i2c_config.sda = BUCKLER_SENSORS_SDA;
+  i2c_config.scl       = BUCKLER_SENSORS_SCL;
+  i2c_config.sda       = BUCKLER_SENSORS_SDA;
   i2c_config.frequency = NRF_TWIM_FREQ_100K;
   error_code = nrf_twi_mngr_init(&twi_mngr_instance, &i2c_config);
   APP_ERROR_CHECK(error_code);
   mpu9250_init(&twi_mngr_instance);
   printf("IMU initialized!\n");
-  
+
   // initialize LED
   led_init();
   lightup_led(0);
@@ -330,7 +329,6 @@ int main(void) {
   init_velocity_fsm(&v_fsm);
   init_turning_fsm(&t_fsm);
 
-
   // nrf_delay_ms(100);
   // Launch a new thread to run the dwm code
 
@@ -343,7 +341,8 @@ int main(void) {
     // Update location roughly every 1/10 of a second
     if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.5)) {
       timer_prev = timer_curr;
-      while (!dwm_request_pos(&spi_instance));
+      while (!dwm_request_pos(&spi_instance)) {;
+      }
     }
     if (!active_hazard) {
       if (active_powerup) {
@@ -351,13 +350,13 @@ int main(void) {
         compare_time = read_timer();
         if (get_time_elapsed(powerup_starttime, compare_time) > powerup_duration) {
           decay_mushroom();
-          //printf("%s\n", "powerup ended");
+          // printf("%s\n", "powerup ended");
         } else {
           v_fsm.t_curr = read_timer();
         }
       } else if (v_fsm.state == MUSHROOM_DECAY) {
         decay_mushroom();
-      // Add logic for the button press here
+        // Add logic for the button press here
       } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
         // printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
@@ -387,9 +386,9 @@ int main(void) {
     if (active_hazard) {
       compare_time = read_timer();
       if (get_time_elapsed(hazard_starttime, compare_time) > hazard_duration) {
-        decay_hazard(); 
+        decay_hazard();
       } else {
-          v_fsm.t_curr = read_timer();
+        v_fsm.t_curr = read_timer();
       }
     } else if (hazard_value == BANANA_HAZARD) {
       apply_banana();
@@ -398,12 +397,12 @@ int main(void) {
     } else if (hazard_value == BLUESHELL_HAZARD) {
       apply_blueshell_hazard();
     } else if (stick_push_button.value == 6) {
-	    // Turning left
-	    on_l_stick_press();
-	  } else if (stick_push_button.value == 2) {
-	    // Turning right
-	    on_r_stick_press();
-	  } else if (stick_push_button.value == 7) {
+      // Turning left
+      on_l_stick_press();
+    } else if (stick_push_button.value == 2) {
+      // Turning right
+      on_r_stick_press();
+    } else if (stick_push_button.value == 7) {
       // Turning left diagonal
       on_l_up_stick_press();
     } else if (stick_push_button.value == 1) {
@@ -416,11 +415,11 @@ int main(void) {
       // Turning "left" backwards
       on_l_stick_press();
     } else {
-	    // Go straight
-	    on_stick_release();
-	  }
-  	// Drive the Kobuki
-  	drive();
+      // Go straight
+      on_stick_release();
+    }
+    // Drive the Kobuki
+    drive();
     // printf("v: %lf\n", v_fsm.v);
     if (shouldPollPos) {
       update_dwm_pos(&spi_instance, location_bytes);
@@ -428,19 +427,19 @@ int main(void) {
     }
 
     // Check if we need to try resend a shell notification
-    if (shell_not_notified) { 
+    if (shell_not_notified) {
       uint32_t err_code = simple_ble_notify_char(&shell_char);
       if (err_code == NRF_SUCCESS) {
         shell_not_notified = false;
       }
     }
 
-  	//print_velocity_state(v_fsm.state);
-  	//print_turning_state(t_fsm.state);
-  	/* May read sensors later. */
+    // print_velocity_state(v_fsm.state);
+    // print_turning_state(t_fsm.state);
+    /* May read sensors later. */
     // read sensors from robot
-    //int status = kobukiSensorPoll(&sensors);
-    //nrf_delay_ms(100);
+    // int status = kobukiSensorPoll(&sensors);
+    // nrf_delay_ms(100);
   }
 }
 

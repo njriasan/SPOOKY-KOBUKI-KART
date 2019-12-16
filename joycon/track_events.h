@@ -14,6 +14,7 @@ extern location_t banana_tile;
 /*
  * Helper function to calculate the euclidean distance between two locations.
  */
-double get_euclidean_distance(location_t *l1, location_t *l2);
+double get_euclidean_distance(location_t* l1, location_t* l2);
 
 #endif
+

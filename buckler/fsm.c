@@ -25,30 +25,30 @@ uint32_t read_timer() {
 
 void timer_init(void) {
   // Place your timer initialization code here
-  NRF_TIMER4->BITMODE = 0x3;
-  NRF_TIMER4->PRESCALER = PRESCALE_VALUE;
-  NRF_TIMER4->INTENSET = 0;
+  NRF_TIMER4->BITMODE     = 0x3;
+  NRF_TIMER4->PRESCALER   = PRESCALE_VALUE;
+  NRF_TIMER4->INTENSET    = 0;
   NRF_TIMER4->TASKS_CLEAR = 0x1;
   NRF_TIMER4->TASKS_START = 0x1;
 }
 
-void init_velocity_fsm(velocity_fsm *fsm) {
-  fsm->state = REST;
-  fsm->v = 0.0;
-  fsm->v_dot = 0.0;
-  fsm->v_max = BASE_VELOCITY_MAX;
+void init_velocity_fsm(velocity_fsm* fsm) {
+  fsm->state  = REST;
+  fsm->v      = 0.0;
+  fsm->v_dot  = 0.0;
+  fsm->v_max  = BASE_VELOCITY_MAX;
   fsm->t_prev = read_timer();
   fsm->t_curr = fsm->t_prev;
 }
 
-void init_turning_fsm(turning_fsm *fsm) {
-  fsm->state = CENTER;
-  fsm->v_left = 0.0;
+void init_turning_fsm(turning_fsm* fsm) {
+  fsm->state   = CENTER;
+  fsm->v_left  = 0.0;
   fsm->v_right = 0.0;
 }
 
 void rest() {
-  v_fsm.state = REST;
+  v_fsm.state  = REST;
   v_fsm.t_prev = v_fsm.t_curr;
   v_fsm.t_curr = read_timer();
   v_update();
@@ -90,20 +90,20 @@ void on_button_release() {
   } else {
     v_fsm.v_dot = ACCELERATION / 2;
   }
-  v_fsm.state = CRUISE;
+  v_fsm.state  = CRUISE;
   v_fsm.t_prev = v_fsm.t_curr;
   v_fsm.t_curr = read_timer();
 
   v_update();
 }
 
-double get_time_elapsed (uint32_t earlier_clk, uint32_t later_clk) {
+double get_time_elapsed(uint32_t earlier_clk, uint32_t later_clk) {
   double change = 0.0;
   if (later_clk < earlier_clk) {
     uint32_t rescaled_curr = UINT32_MAX - later_clk;
-    change = (double) (rescaled_curr + 1 + earlier_clk);
+    change = (double)(rescaled_curr + 1 + earlier_clk);
   } else {
-    change = (double) (later_clk - earlier_clk);
+    change = (double)(later_clk - earlier_clk);
   }
   double diff = (change) / (BASE_CLOCK / (1 << PRESCALE_VALUE));
   return diff;
@@ -114,50 +114,48 @@ void v_update() {
   double diff = get_time_elapsed(v_fsm.t_prev, v_fsm.t_curr);
   v_fsm.v = v_fsm.v + diff * v_fsm.v_dot;
 
-
   if (v_fsm.v >= v_fsm.v_max) {
     v_fsm.v = v_fsm.v_max;
   } else if (v_fsm.v <= -v_fsm.v_max) {
     v_fsm.v = -v_fsm.v_max;
   } else if ((v_fsm.v < 10 && v_fsm.v > -10) && v_fsm.state == CRUISE) {
     v_fsm.v_dot = 0;
-    v_fsm.v = 0;
+    v_fsm.v     = 0;
     v_fsm.state = REST;
   }
 }
 
 void on_l_stick_press() {
-  t_fsm.state = LEFT;
+  t_fsm.state   = LEFT;
   t_fsm.v_right = v_fsm.v * HARD_TURNING_RATE;
-  t_fsm.v_left = v_fsm.v * (1 - HARD_TURNING_RATE);
+  t_fsm.v_left  = v_fsm.v * (1 - HARD_TURNING_RATE);
 }
 
 void on_l_up_stick_press() {
-  t_fsm.state = LEFT_UP;
+  t_fsm.state   = LEFT_UP;
   t_fsm.v_right = v_fsm.v * SOFT_TURNING_RATE;
-  t_fsm.v_left = v_fsm.v * (1 - SOFT_TURNING_RATE);
+  t_fsm.v_left  = v_fsm.v * (1 - SOFT_TURNING_RATE);
 }
 
 void on_r_stick_press() {
-  t_fsm.state = RIGHT;
-  t_fsm.v_left = v_fsm.v * HARD_TURNING_RATE;
+  t_fsm.state   = RIGHT;
+  t_fsm.v_left  = v_fsm.v * HARD_TURNING_RATE;
   t_fsm.v_right = v_fsm.v * (1 - HARD_TURNING_RATE);
 }
 
 void on_r_up_stick_press() {
-  t_fsm.state = RIGHT_UP;
-  t_fsm.v_left = v_fsm.v * SOFT_TURNING_RATE;
+  t_fsm.state   = RIGHT_UP;
+  t_fsm.v_left  = v_fsm.v * SOFT_TURNING_RATE;
   t_fsm.v_right = v_fsm.v * (1 - SOFT_TURNING_RATE);
 }
 
 void on_stick_release() {
-  t_fsm.state = CENTER;
-  t_fsm.v_left = v_fsm.v / 2.0;
+  t_fsm.state   = CENTER;
+  t_fsm.v_left  = v_fsm.v / 2.0;
   t_fsm.v_right = v_fsm.v / 2.0;
 }
 
 void drive() {
   kobukiDriveDirect(t_fsm.v_left, t_fsm.v_right);
 }
-
 

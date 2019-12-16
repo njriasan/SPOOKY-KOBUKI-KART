@@ -44,10 +44,10 @@ extern uint8_t shell_byte;
 
 
 /*
-	Function used to apply a mushroom powerup. This increases a user's current
-	and allows them to reach a higher max velocity. The powerup should then
-	decay to the previous max.
-*/
+ *  Function used to apply a mushroom powerup. This increases a user's current
+ *  and allows them to reach a higher max velocity. The powerup should then
+ *  decay to the previous max.
+ */
 void apply_mushroom();
 void apply_redshell_powerup();
 void apply_blueshell_powerup();
@@ -59,3 +59,4 @@ void apply_blueshell_hazard();
 void decay_hazard();
 
 #endif
+
