@@ -20,6 +20,10 @@ connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr
     node->shell_request = NO_SHELL_REQUEST;
     node->event_triggered = NO_EVENT;
     pthread_mutex_init(&node->location_lock, NULL);
+    // Initialize all the times
+    gettimeofday(&node->mushroom_time, NULL);
+    gettimeofday(&node->redshell_time, NULL);
+    gettimeofday(&node->banana_time, NULL);
     return node;
 }
 

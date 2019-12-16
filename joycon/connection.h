@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/time.h>
 #include <wchar.h>
 
 /*
@@ -54,6 +55,12 @@ typedef struct connection_node {
     // Value used to communicate the acquisition of a powerup or hazard
     // to the kobuki
     uint8_t event_triggered;
+    // Timer to track the last time a mushroom was given
+    struct timeval mushroom_time;
+    // Timer to track the last time a redshell was given
+    struct timeval redshell_time;
+    // Timer to track the last time a banana was given
+    struct timeval banana_time;
     // Next info for keeping track of a linked list
     struct connection_node *next;
 } connection_node_t;

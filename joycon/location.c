@@ -224,26 +224,42 @@ void process_used_shells(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
  * Helper function used to assign powerups/hazards on the track to the closest Kobuki.
  */
 void assign_track_events(kobuki_info_t *in_play_kobukis, size_t num_kobukis) {
+    struct timeval trigger_time;
     // Add code to determine if any kobukis are in range of the powerup/hazard
     for (size_t i = 0; i < num_kobukis; i++) {
         if (get_euclidean_distance(&in_play_kobukis[i].location, &mushroom_tile) <= ELEM_RADIUS) {
             connection_node_t *node = in_play_kobukis[i].kobuki_node;
             uint8_t existing_event = get_event_request(node);
             if (existing_event == NO_EVENT) {
-                set_event_request(node, MUSHROOM_POWERUP);
+                gettimeofday(&trigger_time, NULL);
+                int diff = (trigger_time.tv_sec - node->mushroom_time.tv_sec) * SECOND_TO_MICROSECONDS + (trigger_time.tv_usec - node->mushroom_time.tv_usec);
+                if (diff > POWERUP_DELAY) {
+                    set_event_request(node, MUSHROOM_POWERUP);
+                    gettimeofday(&node->mushroom_time, NULL);
+                }
             }
         } else if (get_euclidean_distance(&in_play_kobukis[i].location, &redshell_tile) <= ELEM_RADIUS) {
             connection_node_t *node = in_play_kobukis[i].kobuki_node;
             uint8_t existing_event = get_event_request(node);
             if (existing_event == NO_EVENT) {
-                set_event_request(node, REDSHELL_POWERUP);
+                gettimeofday(&trigger_time, NULL);
+                int diff = (trigger_time.tv_sec - node->redshell_time.tv_sec) * SECOND_TO_MICROSECONDS + (trigger_time.tv_usec - node->redshell_time.tv_usec);
+                if (diff > POWERUP_DELAY) {
+                    set_event_request(node, REDSHELL_POWERUP);
+                    gettimeofday(&node->redshell_time, NULL);
+                }
             }
         } else if (get_euclidean_distance(&in_play_kobukis[i].location, &banana_tile) <= ELEM_RADIUS) {
             connection_node_t *node = in_play_kobukis[i].kobuki_node;
             uint8_t existing_event = get_event_request(node);
         if (existing_event != BANANA_HAZARD && existing_event != REDSHELL_HAZARD
                && existing_event != BLUESHELL_HAZARD) {
-                set_event_request(node, BANANA_HAZARD);
+                gettimeofday(&trigger_time, NULL);
+                int diff = (trigger_time.tv_sec - node->banana_time.tv_sec) * SECOND_TO_MICROSECONDS + (trigger_time.tv_usec - node->banana_time.tv_usec);
+                if (diff > HAZARD_DELAY) {
+                    set_event_request(node, BANANA_HAZARD);
+                    gettimeofday(&node->banana_time, NULL);
+                }
             }
         } 
     }
