@@ -124,7 +124,7 @@ void controller_evt_write() {
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     if (buttons[i] == &rz_button) {
       rz_backup = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
-      if (powerup_value == NO_POWERUP) {
+      if (powerup_value == NO_POWERUP || buttons[i]->value == 0) {
         buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
 
       }

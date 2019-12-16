@@ -51,6 +51,7 @@ void apply_mushroom() {
   powerup_duration  = MUSHROOM_TICKS;
   powerup_starttime = read_timer();
   lightup_led(0);
+  rz_button.value = rz_backup;
   powerup_value = NO_POWERUP;
 }
 
