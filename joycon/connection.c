@@ -19,8 +19,6 @@ connection_node_t *create_node (wchar_t *joycon_mac_addr, char *buckler_mac_addr
     node->is_valid_location = false;
     node->shell_request = NO_SHELL_REQUEST;
     node->event_triggered = NO_EVENT;
-    node->acquired_track_events = 0;
-    node->lap_number = 0;
     pthread_mutex_init(&node->location_lock, NULL);
     return node;
 }
