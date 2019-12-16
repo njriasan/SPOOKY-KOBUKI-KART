@@ -90,16 +90,9 @@ simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
 
-typedef struct {
-  const char* name;
-  uint16_t mask;
-  uint8_t shift_amount;
-  uint8_t value;
-} button_info_t;
-
 static button_info_t x_button          = {"X", 0b1 << 3, 3, 0};
 static button_info_t b_button          = {"B", 0b1, 0, 0};
-static button_info_t rz_button         = {"RZ", 0b1 << 4, 4, 0};
+button_info_t rz_button         = {"RZ", 0b1 << 4, 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
 static button_info_t* buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
@@ -129,8 +122,18 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
 
 void controller_evt_write() {
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
-    buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
+    if (buttons[i] == &rz_button) {
+      rz_backup = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
+      if (powerup_value == NO_POWERUP) {
+        buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
+
+      }
+
+    } else {
+      buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
+    }
   }
+  //printf("controller_bytes %x\n", controller_bytes);
   controller_bytes = 0;
 }
 
@@ -144,7 +147,7 @@ void powerup_evt_write() {
       if (powerup_byte == MUSHROOM_POWERUP) {
         lightup_led(2);
       } else if (powerup_byte == REDSHELL_POWERUP) {
-        printf("Received redshell\n");
+        //printf("Received redshell\n");
         lightup_led(1);
       }
     }
@@ -154,80 +157,20 @@ void powerup_evt_write() {
 
 // Update the hazard value only if there is no existing hazard
 void hazard_evt_write() {
-  printf("Hazard value %d\n", hazard_byte);
+  //printf("Hazard value %d\n", hazard_byte);
   if (hazard_value == NO_HAZARD) {
     if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
-      printf("Hazard Received %d\n", hazard_byte);
+      //printf("Hazard Received %d\n", hazard_byte);
 
       if (hazard_byte == BANANA_HAZARD) {
         lightup_led(4);
+      } else if (hazard_byte == REDSHELL_HAZARD) {
+        lightup_led(3);
       }
     }
   }
   hazard_byte = NO_HAZARD;
-}
-
-void print_velocity_state(velocity_states current_state) {
-  switch (current_state) {
-    case REST: {
-      display_write("OFF", DISPLAY_LINE_0);
-      break;
-    }
-    case ACCELERATE: {
-      display_write("ACCELERATE", DISPLAY_LINE_0);
-      break;
-    }
-    case REVERSE: {
-      display_write("REVERSE", DISPLAY_LINE_0);
-      break;
-    }
-    case CRUISE: {
-      display_write("CRUISE", DISPLAY_LINE_0);
-      break;
-    }
-    case MUSHROOM: {
-      display_write("MUSHROOM", DISPLAY_LINE_0);
-      break;
-    }
-    case MUSHROOM_DECAY: {
-      display_write("MUSHROOM_DECAY", DISPLAY_LINE_0);
-      break;
-    }
-    case EXIT_POWERUP: {
-      display_write("EXIT_POWERUP", DISPLAY_LINE_0);
-      break;
-    }
-  }
-}
-
-void print_turning_state(turning_states current_state) {
-  switch (current_state) {
-    case LEFT: {
-      display_write("LEFT", DISPLAY_LINE_1);
-      break;
-    }
-    case CENTER: {
-      display_write("CENTER", DISPLAY_LINE_1);
-      break;
-    }
-    case RIGHT: {
-      display_write("RIGHT", DISPLAY_LINE_1);
-      break;
-    }
-    case LEFT_UP: {
-      display_write("LEFT_UP", DISPLAY_LINE_1);
-      break;
-    }
-    case RIGHT_UP: {
-      display_write("RIGHT_UP", DISPLAY_LINE_1);
-      break;
-    }
-    case BANANA: {
-      display_write("BANANA", DISPLAY_LINE_1);
-      break;
-    }
-  }
 }
 
 int main(void) {

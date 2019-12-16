@@ -6,6 +6,14 @@
 #include "fsm.h"
 #include "simple_ble.h"
 
+/* Struct for buttons. */
+typedef struct {
+  const char* name;
+  uint16_t mask;
+  uint8_t shift_amount;
+  uint8_t value;
+} button_info_t;
+
 // Information on powerup values
 #define NO_POWERUP 0
 #define MUSHROOM_POWERUP 1
@@ -22,6 +30,10 @@ extern uint8_t hazard_value;
 
 extern bool active_powerup;
 extern bool active_hazard;
+
+// Fix a bug on missed powerup usage
+extern button_info_t rz_button;
+extern uint8_t rz_backup;
 
 // Determines if the shell characteristic needs to be notified.
 // This is set to true if the call to simple_ble_notify_char fails.
