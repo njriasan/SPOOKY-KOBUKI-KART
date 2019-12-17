@@ -90,9 +90,9 @@ simple_ble_app_t* simple_ble_app;
 
 // controls ordering: accelerate, decelerate, left, right
 
-static button_info_t x_button          = {"X", 0b1 << 3, 3, 0};
-static button_info_t b_button          = {"B", 0b1, 0, 0};
-button_info_t rz_button         = {"RZ", 0b1 << 4, 4, 0};
+static button_info_t x_button = {"X", 0b1 << 3, 3, 0};
+static button_info_t b_button = {"B", 0b1, 0, 0};
+button_info_t rz_button       = {"RZ", 0b1 << 4, 4, 0};
 static button_info_t stick_push_button = {"STICK PUSH", 0b1111 << 8, 8, 8};
 
 static button_info_t* buttons[NUM_BUTTONS] = {&x_button, &b_button, &rz_button, &stick_push_button};
@@ -133,7 +133,7 @@ void controller_evt_write() {
       buttons[i]->value = (buttons[i]->mask & controller_bytes) >> buttons[i]->shift_amount;
     }
   }
-  //printf("controller_bytes %x\n", controller_bytes);
+  // printf("controller_bytes %x\n", controller_bytes);
   controller_bytes = 0;
 }
 
@@ -147,7 +147,7 @@ void powerup_evt_write() {
       if (powerup_byte == MUSHROOM_POWERUP) {
         lightup_led(2);
       } else if (powerup_byte == REDSHELL_POWERUP) {
-        //printf("Received redshell\n");
+        // printf("Received redshell\n");
         lightup_led(1);
       }
     }
@@ -157,11 +157,11 @@ void powerup_evt_write() {
 
 // Update the hazard value only if there is no existing hazard
 void hazard_evt_write() {
-  //printf("Hazard value %d\n", hazard_byte);
+  // printf("Hazard value %d\n", hazard_byte);
   if (hazard_value == NO_HAZARD) {
     if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
-      //printf("Hazard Received %d\n", hazard_byte);
+      // printf("Hazard Received %d\n", hazard_byte);
 
       if (hazard_byte == BANANA_HAZARD) {
         lightup_led(4);

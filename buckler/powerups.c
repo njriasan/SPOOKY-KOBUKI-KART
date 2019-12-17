@@ -52,7 +52,7 @@ void apply_mushroom() {
   powerup_starttime = read_timer();
   lightup_led(0);
   rz_button.value = rz_backup;
-  powerup_value = NO_POWERUP;
+  powerup_value   = NO_POWERUP;
 }
 
 void apply_redshell_powerup() {
@@ -145,7 +145,7 @@ void decay_hazard() {
 void complete_powerup() {
   active_powerup   = false;
   powerup_duration = 0;
-  rz_button.value = rz_backup;
+  rz_button.value  = rz_backup;
   v_fsm.state      = EXIT_POWERUP;
   v_fsm.v_max      = BASE_VELOCITY_MAX;
   v_fsm.v_dot      = ACCELERATION;
