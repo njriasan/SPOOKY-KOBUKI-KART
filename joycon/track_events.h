@@ -3,29 +3,18 @@
 
 #include "location.h"
 
-#define NUM_POLYGON_POINTS 4
+extern location_t mushroom_tile;
 
-typedef struct {
+extern location_t redshell_tile;
 
-    // Identifier used to denote a particular track_elem. This should be a unique integer
-    // between 0 and 7 (so we support up to 8 track events).
-    uint8_t uuid;
+extern location_t banana_tile;
 
-    // Points the define the exterior vertices for defining the area of the polygon.
-    location_t vertices[NUM_POLYGON_POINTS];
-} track_elem_t;
-
-#define NUM_POWERUPS 2
-
-extern track_elem_t powerup_arr[NUM_POWERUPS];
-
-#define NUM_HAZARDS 1
-
-extern track_elem_t hazard_arr[NUM_HAZARDS];
+#define ELEM_RADIUS 500.0
 
 /*
- * Helper function to verify that all uuids are unique and that all are < 8.
+ * Helper function to calculate the euclidean distance between two locations.
  */
-void validate_uuids();
+double get_euclidean_distance(location_t* l1, location_t* l2);
 
 #endif
+

@@ -50,8 +50,8 @@ This is the breakdown of the 2 Bytes (calling the MSB of the first byte bit 0 an
   *  Bits 4-7: STICK PUSH 
   *  Bit 8: SL
   *  Bit 9: SR
-  *  Bit 10: R
-  *  Bit 11: RZ
+  *  Bit 10: L/R
+  *  Bit 11: LZ/RZ
   *  Bit 12: X
   *  Bit 13: Y
   *  Bit 14: A

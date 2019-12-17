@@ -1,31 +1,22 @@
 #include <assert.h>
+#include <math.h>
+#include <stdio.h>
 #include "track_events.h"
 
+location_t mushroom_tile = {6614.000000, -295.000000, 1358.000000};
 
-track_elem_t powerup_arr[NUM_POWERUPS] =  
-    {{0, {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 
-             {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}},
-    {1, {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 
-            {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}}};
+location_t redshell_tile = {4454.000000, -677.000000, 1570.000000};
 
-track_elem_t hazard_arr[NUM_HAZARDS] = 
-    {{2, {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 
-             {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}}};
+location_t banana_tile = {7637.000000, -37.000000, 1574.000000};
+
+
 
 /*
- * Helper function to verify that all uuids are unique and that all are < 8.
+ * Helper function to calculate the euclidean distance between two locations.
  */
-void validate_uuids() {
-    uint8_t used_bits = 0;
-    size_t i;
-    for (i = 0; i < NUM_POWERUPS; i++) {
-        assert(powerup_arr[i].uuid < 8);
-        assert((used_bits & (1 << powerup_arr[i].uuid)) == 0);
-        used_bits |= (1 << powerup_arr[i].uuid);
-    }
-    for (i = 0; i < NUM_HAZARDS; i++) {
-        assert(hazard_arr[i].uuid < 8);
-        assert((used_bits & (1 << hazard_arr[i].uuid)) == 0);
-        used_bits |= (1 << hazard_arr[i].uuid);
-    }
+double get_euclidean_distance(location_t* l1, location_t* l2) {
+  double result = sqrt(pow(l1->x - l2->x, 2.0) + pow(l1->y - l2->y, 2.0) + pow(l1->z - l2->z, 2.0));
+  // printf("Result is %lf\n", result);
+  return result;
 }
+
