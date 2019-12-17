@@ -19,8 +19,8 @@
 #include "nrf_drv_clock.h"
 #include "nrf_delay.h"
 
-#define PWM_PIN 3
-#define NUM_LEDS 7
+#define PWM_PIN 4
+#define NUM_LEDS 6
 #define zero_bit 6UL | (0x8000)
 #define one_bit 13UL | (0x8000)
 #define reset_bit 0UL | (0x8000)
