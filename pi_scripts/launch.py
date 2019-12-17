@@ -6,8 +6,10 @@
 
 import os, subprocess
 
-subprocess.Popen(["python3", "connect_joycon.py"])
+connect_log = open("connection_log.txt", "w")
+subprocess.Popen(["python3", "connect_joycon.py"], stdout=connect_log, stdout=connect_log)
 os.chdir("../joycon")
 subprocess.call(["make clean"])
 subprocess.call(["make"])
-subprocess.Popen(["./process_manager"])
+manager_log = open("manager_log.txt", "w")
+subprocess.call(["./process_manager"], stdout=manager_log, stderr=manager_log)
