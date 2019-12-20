@@ -108,6 +108,19 @@ void read_hid_data(hid_device* actual_dev, unsigned char* response, unsigned int
 }
 
 
+void read_eval_data(int socket_fd, unsigned char* data, unsigned int size) {
+  int total_read = 0;
+  int curr_read  = 0;
+  while (total_read < size && (curr_read = read (socket_fd,
+                                                    data + total_read, size - total_read)) > 0) {
+    total_read += curr_read;
+  }
+  if (total_read == 0) {
+    exit (1);
+  }
+
+}
+
 /*
  * Writes size bytes through the socket.
  */
@@ -127,10 +140,42 @@ void transfer_hid_data(int socket_fd, unsigned char* data, unsigned int size) {
 
 }
 
+struct addrinfo* get_addrs (char* host, char* port) {
+    struct addrinfo* addrs;
+    struct addrinfo hints;
+    memset(&hints, 0,  sizeof(struct sockaddr));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    int rv = getaddrinfo(host, port, &hints, &addrs);
+    if (rv != 0) {
+        return NULL;
+    }
+    return addrs;
+}
+
+int setup_client_socket (struct addrinfo *addrs) {
+    // Setup the addr socket
+    bool connected = false;
+    int sock = -1;
+    for (struct addrinfo *addr = addrs; addr != NULL && !connected; addr = addr->ai_next) {
+        int sock = socket (addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+        if (sock != -1) {
+            int success = connect(sock, addr->ai_addr, addr->ai_addrlen);
+            if (success == -1) {
+                close (sock);
+                sock = -1;
+            } else {
+                return sock;
+            }
+        } 
+    }
+    return sock;
+}
+
 /*
  * Highest level function for a process that handles all the outputs from the joycon.
  */
-int handle_joycon(int write_pipe_fd, char* device_path) {
+int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num) {
   int res;
   int port_num = 0;
 
@@ -143,17 +188,21 @@ int handle_joycon(int write_pipe_fd, char* device_path) {
   assert (connection_socket != -1);
 
   // Initialize the hidapi library
-  res = hid_init();
-  assert (!res);
+  // res = hid_init();
+  // assert (!res);
+
+  // Establish a connection with the evaluation socket
+  char *host = "127.0.0.1";
+  int eval_socket = setup_client_socket(get_addrs(host, eval_port_num));
 
   // open the actual device
-  hid_device* actual_dev = hid_open_path (device_path);
+  // hid_device* actual_dev = hid_open_path (device_path);
 
-  assert (actual_dev);
   // Load in each message
   unsigned char response[MSG_SIZE];
   while (true) {
-    read_hid_data (actual_dev, response, MSG_SIZE);
+    // read_hid_data (actual_dev, response, MSG_SIZE);
+    read_eval_data (eval_socket, response, MSG_SIZE);
     transfer_hid_data (connection_socket, response, MSG_SIZE);
   }
 

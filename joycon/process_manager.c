@@ -33,6 +33,9 @@ const char* buckler_mac_addrs[NUM_MAC_ADDRS] =
 // List of human readable names for each of our Kobukis
 const char* readable_names[NUM_MAC_ADDRS] = {"black-left", "black-right", "red", "blue"};
 
+// List of all port names for spoofed inputs
+const char* port_names[NUM_MAC_ADDRS] = {"12345", "12346", "12347", "12348"};
+
 static connection_node_t* unprocessed_macs = NULL;
 static connection_node_t* processed_macs   = NULL;
 
@@ -64,7 +67,7 @@ int main(int argc, char* argv[]) {
   // Initialize unprocessed_macs
   for (int i = 0; i < NUM_MAC_ADDRS; i++) {
     // Create a node
-    connection_node_t* node = create_node (wide_joycon_mac_addrs[i], buckler_mac_addrs[i], readable_names[i]);
+    connection_node_t* node = create_node (wide_joycon_mac_addrs[i], buckler_mac_addrs[i], readable_names[i], port_names[i]);
     // Add the node to the unprocessed list
     append_to_front (&unprocessed_macs, node);
   }
@@ -101,7 +104,7 @@ int main(int argc, char* argv[]) {
             // Close the unneeded read fd
             close (node->pipe_fds[0]);
             // Call the joycon handler
-            handle_joycon (node->pipe_fds[1], device->path);
+            handle_joycon (node->pipe_fds[1], device->path, node->port_num);
             perror ("Connection lost");
             exit (1);
           } else if (node->joycon_input_pid > 0) {

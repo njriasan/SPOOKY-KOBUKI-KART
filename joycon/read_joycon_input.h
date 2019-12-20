@@ -10,6 +10,6 @@ int spawn_server(int* port_ptr);
 /*
  * Highest level function for a process that handles all the outputs from the joycon.
  */
-int handle_joycon(int write_pipe_fd, char* device_path);
+int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num);
 #endif
 

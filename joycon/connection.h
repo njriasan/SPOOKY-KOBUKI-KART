@@ -61,6 +61,8 @@ typedef struct connection_node {
   struct timeval redshell_time;
   // Timer to track the last time a banana was given
   struct timeval banana_time;
+  // Port number of server used for evaluation testing.
+  char *port_num;
   // Next info for keeping track of a linked list
   struct connection_node* next;
 } connection_node_t;
@@ -83,7 +85,7 @@ typedef struct connection_node {
  * Constructor for a joycon's node. Assumes that the wchar_t
  * is malloced and it now has ownership (and must free it).
  */
-connection_node_t* create_node(wchar_t* joycon_mac_addr, char* buckler_mac_addr, char* readable_name);
+connection_node_t* create_node(wchar_t* joycon_mac_addr, char* buckler_mac_addr, char* readable_name, char *port_num);
 
 /*
  * Append node to the front of list in place.
