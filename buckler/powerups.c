@@ -40,7 +40,7 @@ uint32_t compare_time      = 0;
  *  decay to the previous max.
  */
 void apply_mushroom() {
-  printf("%s\n", "enters mushroom function");
+  //printf("%s\n", "enters mushroom function");
   active_powerup    = true;
   v_fsm.state       = MUSHROOM;
   v_fsm.v           = POWERUP_VELOCITY_MAX;
@@ -56,8 +56,10 @@ void apply_mushroom() {
 }
 
 void apply_redshell_powerup() {
-  printf("%s\n", "enters red shell function");
-  shell_byte = REDSHELL_BYTE;
+  //printf("%s\n", "enters red shell function");
+  shell_byte = REDSHELL_BYTE; 
+  eval_end = read_timer();
+  printf("%f\n", get_time_elapsed(eval_start, eval_end));
   uint32_t err_code = simple_ble_notify_char(&shell_char);
   if (err_code != NRF_SUCCESS) {
     shell_not_notified = true;
@@ -106,7 +108,7 @@ void apply_banana() {
 }
 
 void apply_redshell_hazard() {
-  printf("%s\n", "redshell hazard triggered");
+  //printf("%s\n", "redshell hazard triggered");
   active_hazard = true;
   complete_powerup();
   powerup_value    = NO_POWERUP;

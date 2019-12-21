@@ -70,5 +70,8 @@ void apply_redshell_hazard();
 void apply_blueshell_hazard();
 void decay_hazard();
 
+// Eval info
+extern uint32_t eval_start;
+extern uint32_t eval_end;
 #endif
 

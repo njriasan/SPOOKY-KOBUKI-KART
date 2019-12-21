@@ -120,6 +120,10 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
   }
 }
 
+// Evaluation timer
+uint32_t eval_start = 0;
+uint32_t eval_end = 0;
+
 void controller_evt_write() {
   for (unsigned int i = 0; i < NUM_BUTTONS; i++) {
     if (buttons[i] == &rz_button) {
@@ -148,6 +152,7 @@ void powerup_evt_write() {
         lightup_led(2);
       } else if (powerup_byte == REDSHELL_POWERUP) {
         // printf("Received redshell\n");
+        eval_start = read_timer();
         lightup_led(1);
       }
     }
@@ -300,7 +305,7 @@ int main(void) {
       } else if (v_fsm.state == MUSHROOM_DECAY) {
         decay_mushroom();
         // Add logic for the button press here
-      } else if (powerup_value != NO_POWERUP && rz_button.value == 1) {
+      } else if (powerup_value != NO_POWERUP) {
         // printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();
