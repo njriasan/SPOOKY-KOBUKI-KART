@@ -77,7 +77,7 @@ int main (int argc, char *argv[]) {
   assert (connection_socket != -1);
   uint8_t msg[12];
   memset(msg, 0, 12);
-  msg[2] = 0x10;
+  msg[1] = 0x8;
   msg[3] = 0x8;
   struct timeval start_time;
   while (1) { 
