@@ -33,7 +33,7 @@ void update_dwm_pos(nrf_drv_spi_t* s, int32_t* location_bytes) {
     memcpy(&y_m, &y, sizeof(y_m));
     memcpy(&z_m, &z, sizeof(z_m));
 
-    printf("Coordinates: (%f, %f, %f)\n", x_m / 1000.0, y_m / 1000.0, z_m / 1000.0);
+    //printf("Coordinates: (%f, %f, %f)\n", x_m / 1000.0, y_m / 1000.0, z_m / 1000.0);
     location_bytes[0] = x_m;
     location_bytes[1] = y_m;
     location_bytes[2] = z_m;
@@ -60,7 +60,6 @@ uint8_t* dwm_tag_init(nrf_drv_spi_t* s) {
   uint8_t size_num[2];
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   while (size_num[0] == 0x00) {
-    printf("%s\n", "Stuck in init loop");
     APP_ERROR_CHECK(err_code);
     if (err_code != NRF_SUCCESS) {
       return NULL;
@@ -75,7 +74,6 @@ uint8_t* dwm_tag_init(nrf_drv_spi_t* s) {
   if (err_code != NRF_SUCCESS) {
     return NULL;
   }
-  printf("%x %x %x\n", readData[0], readData[1], readData[2]);
   return readData;
 }
 
@@ -100,7 +98,7 @@ bool dwm_reset(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  //printf("%x %x\n", size_num[0], size_num[1]);
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
   APP_ERROR_CHECK(err_code);
@@ -114,7 +112,7 @@ uint8_t* dwm_read_rate(nrf_drv_spi_t* s) {
   uint8_t data[2];
   data[0] = 0x04;
   data[1] = 0x00;
-  printf("input commands: %x %x\n", data[0], data[1]);
+  //printf("input commands: %x %x\n", data[0], data[1]);
   update_message(data, 2);
   ret_code_t err_code = nrf_drv_spi_transfer(spi, data, 2, NULL, 0);
   APP_ERROR_CHECK(err_code);
@@ -131,7 +129,7 @@ uint8_t* dwm_read_rate(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  //printf("%x %x\n", size_num[0], size_num[1]);
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
   APP_ERROR_CHECK(err_code);
@@ -139,10 +137,10 @@ uint8_t* dwm_read_rate(nrf_drv_spi_t* s) {
     return NULL;
   }
   int i = 0;
-  while (i < size_num[0]) {
-    printf("%x ", readData[i++]);
+  /*while (i < size_num[0]) {
+    //printf("%x ", readData[i++]);
   }
-  printf("\n");
+  printf("\n"); */
   return readData;
 
 }
@@ -156,7 +154,7 @@ uint8_t* dwm_write_rate(nrf_drv_spi_t* s) {
   data[3] = 0x00;
   data[4] = 0x32;
   data[5] = 0x00;
-  printf("input commands: %x %x\n", data[0], data[1]);
+  //printf("input commands: %x %x\n", data[0], data[1]);
   update_message(data, 6);
   ret_code_t err_code = nrf_drv_spi_transfer(spi, data, 6, NULL, 0);
   APP_ERROR_CHECK(err_code);
@@ -173,7 +171,7 @@ uint8_t* dwm_write_rate(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  //printf("%x %x\n", size_num[0], size_num[1]);
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
   APP_ERROR_CHECK(err_code);
@@ -181,10 +179,6 @@ uint8_t* dwm_write_rate(nrf_drv_spi_t* s) {
     return NULL;
   }
   int i = 0;
-  while (i < size_num[0]) {
-    printf("%x ", readData[i++]);
-  }
-  printf("\n");
   return readData;
 
 }
@@ -217,7 +211,7 @@ uint8_t* dwm_recieve_pos(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  //printf("%x %x\n", size_num[0], size_num[1]);
   // Reading data from tag
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
@@ -239,7 +233,7 @@ uint8_t* dwm_read_pos(nrf_drv_spi_t* s) {
   uint8_t data[2];
   data[0] = 0x02;
   data[1] = 0x00;
-  printf("Input commands: %x %x\n", data[0], data[1]);
+  //printf("Input commands: %x %x\n", data[0], data[1]);
   update_message(data, 2);
   // Sending TLV request to tag
   ret_code_t err_code = nrf_drv_spi_transfer(spi, data, 2, NULL, 0);
@@ -258,7 +252,7 @@ uint8_t* dwm_read_pos(nrf_drv_spi_t* s) {
     nrf_delay_ms(10);
     err_code = nrf_drv_spi_transfer(spi, NULL, 0, size_num, 2);
   }
-  printf("%x %x\n", size_num[0], size_num[1]);
+  //printf("%x %x\n", size_num[0], size_num[1]);
   // Reading data from tag
   uint8_t* readData = (uint8_t*)malloc(sizeof(uint8_t) * size_num[0]);
   err_code = nrf_drv_spi_transfer(spi, NULL, 0, readData, size_num[0]);
@@ -267,10 +261,6 @@ uint8_t* dwm_read_pos(nrf_drv_spi_t* s) {
     return NULL;
   }
   int i = 0;
-  while (i < size_num[0]) {
-    printf("%x ", readData[i++]);
-  }
-  printf("\n");
   return readData;
 }
 

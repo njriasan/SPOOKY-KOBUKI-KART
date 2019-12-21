@@ -54,7 +54,7 @@ KobukiSensors_t sensors = {0};
 static simple_ble_config_t ble_config = {
   // c0:98:e5:yy:xx:xx
   .platform_id       = 0x00,          // used as 4th octect in device BLE address yy
-  .device_id         = 0x13,       // TODO: replace with your lab bench number xx
+  .device_id         = 0x12,       // TODO: replace with your lab bench number xx
   .adv_name          = "KOBUKI",       // used in advertisements if there is room
   .adv_interval      = MSEC_TO_UNITS(1000, UNIT_0_625_MS),
   .min_conn_interval = MSEC_TO_UNITS(100, UNIT_1_25_MS),
@@ -143,7 +143,6 @@ void controller_evt_write() {
 
 // Update the powerup value only if there is no existing powerup
 void powerup_evt_write() {
-  printf("Powerup value %d\n", powerup_byte);
   if (powerup_value == NO_POWERUP && hazard_value == NO_HAZARD) {
     if (powerup_byte == MUSHROOM_POWERUP || powerup_byte == REDSHELL_POWERUP || powerup_byte == BLUESHELL_POWERUP) {
       powerup_value = powerup_byte;
@@ -162,7 +161,7 @@ void powerup_evt_write() {
 
 // Update the hazard value only if there is no existing hazard
 void hazard_evt_write() {
-  // printf("Hazard value %d\n", hazard_byte);
+  printf("Hazard value %d\n", hazard_byte);
   if (hazard_value == NO_HAZARD) {
     if (hazard_byte == BANANA_HAZARD || hazard_byte == REDSHELL_HAZARD || hazard_byte == BLUESHELL_HAZARD) {
       hazard_value = hazard_byte;
@@ -246,9 +245,9 @@ int main(void) {
     free(readData);
     readData = dwm_tag_init(&spi_instance);
   }
-  while (!dwm_reset(&spi_instance)) {
-    printf("Resetting");
-  }
+  //while (!dwm_reset(&spi_instance)) {
+  //  printf("Resetting");
+  //}
   printf("dwm tag initialized!\n");
 
   // display_init(&spi_instance);
@@ -265,8 +264,8 @@ int main(void) {
   printf("IMU initialized!\n");
 
   // initialize LED
-  led_init();
-  lightup_led(0);
+  // led_init();
+  // lightup_led(0);
 
   // initialize Kobuki
   kobukiInit();
@@ -289,7 +288,8 @@ int main(void) {
     // Update location roughly every 1/10 of a second
     if ((shouldPollPos = get_time_elapsed (timer_prev, timer_curr) > 0.5)) {
       timer_prev = timer_curr;
-      while (!dwm_request_pos(&spi_instance)) {;
+      while (!dwm_request_pos(&spi_instance)) {
+        printf("Help I'm trapped\n");
       }
     }
     if (!active_hazard) {
@@ -306,7 +306,6 @@ int main(void) {
         decay_mushroom();
         // Add logic for the button press here
       } else if (powerup_value != NO_POWERUP) {
-        // printf("%s%d\n", "powerup_value is ", powerup_value);
         if (powerup_value == MUSHROOM_POWERUP) {
           apply_mushroom();
           // nrf_delay_ms(100);
