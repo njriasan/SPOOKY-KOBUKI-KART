@@ -53,6 +53,17 @@ static wchar_t** convert_to_wide_strings(const char** joycon_mac_addrs, size_t n
   return wide_joycon_mac_addrs;
 }
 
+
+void kill_all_children(int unused) {
+    connection_node_t* node = processed_macs;
+    while (node != NULL) {
+        kill (node->ble_output_pid, SIGKILL);
+        kill (node->joycon_input_pid, SIGKILL);
+        node = node->next;
+    }
+    exit(1);
+}
+
 int main(int argc, char* argv[]) {
   if (argc != 2) {
     fprintf (stderr, "Usage: ./controller <autoconnect count>\n");
@@ -60,6 +71,9 @@ int main(int argc, char* argv[]) {
   }
   //fprintf(stderr, "Starting the process manager.\n");
   int res;
+
+  // Make sure control-c kills all child processes
+  signal(SIGINT, &kill_all_children);
 
   // Initialize all wide strings
   wchar_t** wide_joycon_mac_addrs = convert_to_wide_strings (joycon_mac_addrs, NUM_MAC_ADDRS);
