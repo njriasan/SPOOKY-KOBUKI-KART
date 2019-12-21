@@ -158,6 +158,7 @@ class Button:
     """
     def display_status(self):
         # print(self.return_status())
+        pass
 
     """
         Returns if a button is not pressed
@@ -292,6 +293,7 @@ class Controller:
             status = status or new_status
         if not status:
             # print("No buttons are currently pressed")
+            pass
     
     """
         Constructs the output message to send over BLE to the Kobuki. 

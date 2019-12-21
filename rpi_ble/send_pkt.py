@@ -6,10 +6,9 @@ import time
 from enum import IntEnum
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
+from buttons import JoyCon
 import argparse
 import socket
-
-from buttons import JoyCon
 
 parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
 parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
