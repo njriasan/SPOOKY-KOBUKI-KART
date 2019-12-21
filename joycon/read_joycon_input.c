@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include "hidapi/hidapi.h"
 #include "read_joycon_input.h"
+#include "location.h"
 
 
 // Experimentation showed a msg size of 12 bytes per joycon input
@@ -178,7 +180,11 @@ int setup_client_socket (struct addrinfo *addrs) {
 int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num) {
   int res;
   int port_num = 0;
+  char *str = malloc(100);
+  strcpy(str, "joycon-input-files");
+  strcat(str, eval_port_num);
 
+  FILE *write_file = fopen(str, "w");
   // Spawn the server socket used for IPC with the BLE layer
   int server_fd = spawn_server (&port_num);
   send_port(write_pipe_fd, port_num);
@@ -201,9 +207,14 @@ int handle_joycon(int write_pipe_fd, char* device_path, char *eval_port_num) {
 
   // Load in each message
   unsigned char response[MSG_SIZE];
+  struct timeval start_time;
   while (true) {
     // read_hid_data (actual_dev, response, MSG_SIZE);
     read_eval_data (eval_socket, response, MSG_SIZE);
+    gettimeofday (&start_time, NULL);
+    // Add in logic to print
+    uint64_t time_remaining = start_time.tv_sec * SECOND_TO_MICROSECONDS + start_time.tv_usec;
+    fprintf(write_file, "%lu\n", time_remaining);
     transfer_hid_data (connection_socket, response, MSG_SIZE);
   }
 

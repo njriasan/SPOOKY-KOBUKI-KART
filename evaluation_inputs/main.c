@@ -10,6 +10,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define SECOND_TO_MICROSECONDS 1000000
+
 struct addrinfo* setup_address(char* port) {
   struct addrinfo* server;
   struct addrinfo hints;
@@ -67,9 +69,10 @@ void transfer_controller_data(int socket_fd, unsigned char* data, unsigned int s
 }
 
 int main (int argc, char *argv[]) {
-  assert(argc == 3);
+  assert(argc == 4);
   char *port = argv[1];
   int send_interval = atoi(argv[2]);
+  int msg_counter = atoi(argv[3]);
   int server_fd = spawn_server(port);
   assert (server_fd != -1);
   assert (listen (server_fd, 1) >= 0);
@@ -80,9 +83,11 @@ int main (int argc, char *argv[]) {
   msg[1] = 0x8;
   msg[3] = 0x8;
   struct timeval start_time;
-  while (1) { 
+  while (msg_counter--) { 
     gettimeofday (&start_time, NULL);
     // Add in logic to print
+    uint64_t time_remaining = start_time.tv_sec * SECOND_TO_MICROSECONDS + start_time.tv_usec;
+    printf("%lu\n", time_remaining);
     transfer_controller_data(connection_socket, msg, 12);
     if (send_interval == 0) {
         sleep(100000);

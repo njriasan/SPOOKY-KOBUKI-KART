@@ -3,6 +3,7 @@ import inspect
 import sys
 import struct
 import time
+import datetime
 from enum import IntEnum
 from getpass import getpass
 from bluepy.btle import Peripheral, DefaultDelegate
@@ -18,6 +19,9 @@ args = parser.parse_args()
 addr = args.addr.lower()
 controller_server_port = args.controller_server_port
 manager_server_port = args.manager_server_port
+
+f1 = open(addr + "1.txt", "w")
+f2 = open(addr + "2.txt", "w")
 
 SERVICE_UUID = "5607eda0-f65e-4d59-a9ff-84420d87a4ca"
 CHAR_UUIDS = [
@@ -60,6 +64,9 @@ class RobotDelegate(DefaultDelegate):
             self.manager_sock.send(total_data)
         elif cHandle == self.shell_handle:
             # print("Receives a shell message")
+            then = datetime.datetime.now()
+            unix_time = time.mktime(then.timetuple()) + then.microsecond
+            print(unix_time, file=f2)
             assert(len(data) == 1)
             # Compose a new 13 byte message with a leading shell value and then
             # 12 0s. Only send a message if it is a valid shell value
@@ -187,6 +194,9 @@ class RobotController():
             elif (button.name == "-" or button.name == "+") and not button.is_not_pressed():
                 self.send_powerup(bytearray([Powerups.mushroom.value]))
             elif (button.name == "Y") and not button.is_not_pressed():
+                then = datetime.datetime.now()
+                unix_time = time.mktime(then.timetuple()) + then.microsecond
+                print(unix_time, file=f1)
                 self.send_powerup(bytearray([Powerups.redshell.value]))
 
 
