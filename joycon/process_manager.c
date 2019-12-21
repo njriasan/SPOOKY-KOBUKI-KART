@@ -54,8 +54,8 @@ static wchar_t** convert_to_wide_strings(const char** joycon_mac_addrs, size_t n
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 1) {
-    fprintf (stderr, "Usage: ./controller\n");
+  if (argc != 2) {
+    fprintf (stderr, "Usage: ./controller <autoconnect count>\n");
     exit (1);
   }
   //fprintf(stderr, "Starting the process manager.\n");
@@ -78,6 +78,8 @@ int main(int argc, char* argv[]) {
   res = hid_init();
   assert (!res);
 
+  int connectors = atoi(argv[1]);
+    
   // Interval at which to poll. This is a heuristic decision about
   // how often we expect to get a location update.
   const int polling_time = SECOND_TO_MICROSECONDS / 2;
@@ -90,10 +92,11 @@ int main(int argc, char* argv[]) {
 
     struct hid_device_info* device = devices;
     // Iterate through all the devices looking for our mac addrs
-    while (device != NULL) {
+    while (device != NULL || connectors > 0) {
       // Check all mac addrs in the list
       for (connection_node_t* node = unprocessed_macs; node != NULL; node = node->next) {
-        if (!wcscmp (device->serial_number, node->joycon_mac_addr)) {
+        if (connectors > 0 || (device != NULL && !wcscmp (device->serial_number, node->joycon_mac_addr))) {
+          connectors--;
 
           // Call the pipe syscall to pass back the server
           pipe (node->pipe_fds);
@@ -110,7 +113,7 @@ int main(int argc, char* argv[]) {
           } else if (node->joycon_input_pid > 0) {
             // Close the write portion of the pipe
             close (node->pipe_fds[1]);
-            // printf ("Forked a new process.\n");
+            //printf ("Forked a new process.\n");
             // TODO: Add code to move this into a new thread
             char* server_num_ptr = (char*)&node->controller_server_port;
             int read_size        = 0;
@@ -137,7 +140,7 @@ int main(int argc, char* argv[]) {
             if (node->ble_output_pid == 0) {
               // Spawned child process
               char* python_path = "python3";
-              char* args[5];
+              char* args[6];
               args[0] = python_path;
               args[1] = "../rpi_ble/send_pkt.py";
               args[2] = node->buckler_mac_addr;
@@ -165,8 +168,10 @@ int main(int argc, char* argv[]) {
           // Move to the next device as we have already paired this device
           break;
         }
+      } 
+      if (device != NULL) {
+        device = device->next;
       }
-      device = device->next;
     }
     if (devices != NULL) {
       // Free the malloced data
